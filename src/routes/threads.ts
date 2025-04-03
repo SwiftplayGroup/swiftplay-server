@@ -1,3 +1,14 @@
+/*
+_id 67eef7055bae0efbc3968f0f
+user "id"
+content "Cmich Valorant A team is awesome"
+date "{time stamp}"
+tags Array (2)
+views "100"
+likeCount "23"
+isDeleted false
+*/
+
 import { Router } from "express";
 import threadsRouter from "./threads/[threadID].js";
 import database from "#utils/database-generator.js";

@@ -1,3 +1,9 @@
+/*
+{"_id":{"$oid":"67eedf895f7606295aefff90"},
+"name":"Valorant",
+"description":"community for the worst shooter ever"}
+*/
+
 import { Router } from "express";
 import forumsRouter from "./forums/[forumID].js";
 import database from "#utils/database-generator.js";
