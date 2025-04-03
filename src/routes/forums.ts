@@ -16,4 +16,17 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.post("/", async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    const forum = await database
+      .collection("forums")
+      .insertOne({ title, description });
+    res.status(201).json(forum);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 export default router;
