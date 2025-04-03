@@ -13,8 +13,11 @@ app.use("/runs", runsRouter);
 app.use("/account", accountRouter);
 app.use("/accounts", accountsRouter);
 app.use("/game-pages", gamePagesRouter);
+app.use("/forums", forumsRouter);
 
-app.get("/", (_, response) => response.json({success: true}));
+app.get("/", (_, response) => response.json({ success: true }));
 
 const port = process.env.PORT;
-app.listen(port, () => console.log(`\x1b[32mNow listening on port ${port}.\x1b[0m`));
+app.listen(port, () =>
+  console.log(`\x1b[32mNow listening on port ${port}.\x1b[0m`),
+);
