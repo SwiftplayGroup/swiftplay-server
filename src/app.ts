@@ -3,6 +3,7 @@ import accountRouter from "./routes/account.js";
 import accountsRouter from "./routes/accounts.js";
 import runsRouter from "./routes/runs.js";
 import gamePagesRouter from "./routes/game-pages.js";
+import forumsRouter from "./routes/forums.js";
 import cors from "cors";
 
 const app = express();

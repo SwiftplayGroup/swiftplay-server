@@ -4,3 +4,5 @@ import forumsRouter from "./forums/[forumID].js";
 const router = Router();
 
 router.use("/forums", forumsRouter);
+
+export default router;
