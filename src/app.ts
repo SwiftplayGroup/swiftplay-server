@@ -4,6 +4,7 @@ import accountsRouter from "./routes/accounts.js";
 import runsRouter from "./routes/runs.js";
 import gamePagesRouter from "./routes/game-pages.js";
 import forumsRouter from "./routes/forums.js";
+import threadsRouter from "./routes/threads.js";
 import cors from "cors";
 
 const app = express();
@@ -15,6 +16,7 @@ app.use("/account", accountRouter);
 app.use("/accounts", accountsRouter);
 app.use("/game-pages", gamePagesRouter);
 app.use("/forums", forumsRouter);
+app.use("/threads", threadsRouter);
 
 app.get("/", (_, response) => response.json({ success: true }));
 
