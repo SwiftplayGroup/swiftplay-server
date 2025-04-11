@@ -23,7 +23,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "build": "tsc -b --clean && tsc -b",
+    "build": "tsc -b --clean",
     "start": "node --env-file=.env dist/app.js"
   },
   "imports": {
