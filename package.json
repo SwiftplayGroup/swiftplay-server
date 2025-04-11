@@ -24,6 +24,7 @@
   },
   "scripts": {
     "build": "npx tsc -b --clean",
+
     "start": "node --env-file=.env dist/app.js"
   },
   "imports": {
