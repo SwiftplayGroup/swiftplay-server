@@ -2,6 +2,7 @@
 _id 67eef7055bae0efbc3968f0f
 user "id"
 content "Cmich Valorant A team is awesome"
+forum: "id"
 date "{time stamp}"
 tags Array (2)
 views "100"
@@ -29,11 +30,31 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { title, description } = req.body;
-    const forum = await database
+    const {
+      _id,
+      user,
+      content,
+      forum,
+      date,
+      tags,
+      views,
+      likeCount,
+      isDeleted,
+    } = req.body;
+    const thread = await database
       .collection("threads")
-      .insertOne({ title, description });
-    res.status(201).json(forum);
+      .insertOne({
+        _id,
+        user,
+        content,
+        forum,
+        date,
+        tags,
+        views,
+        likeCount,
+        isDeleted,
+      });
+    res.status(201).json(thread);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
