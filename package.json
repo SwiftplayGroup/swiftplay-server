@@ -22,8 +22,8 @@
     "mongodb": "^6.11.0"
   },
   "scripts": {
-    "build": "npm install --no-save typescript && npx tsc -b --clean && npx tsc",
-    "start": "node --env-file=.env dist/app.js"
+    "build": "tsc -b --clean && tsc -b",
+    "start": "tsc && node --env-file=.env dist/app.js"
   },
   "imports": {
     "#utils/*": "./dist/utils/*"
