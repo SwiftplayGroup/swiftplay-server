@@ -22,7 +22,7 @@
     "mongodb": "^6.11.0"
   },
   "scripts": {
-    "build": "npm install --no-save typescript --force && npx --package typescript tsc -b --clean && npx --package typescript tsc",
+    "build": "npm install --no-save typescript && npx tsc -b --clean && npx tsc",
     "start": "node --env-file=.env dist/app.js"
   },
   "imports": {
