@@ -8,13 +8,15 @@
 */
 
 import { Router } from "express";
-import likesRouter from "./posts/[postID].js";
+import likesRouter from "./likes/[likeID].js";
+import hasLikedRouter from "./likes/hasLiked.js";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 
 const router = Router();
 
 router.use("/likes", likesRouter);
+router.use("/likes/hasLiked", hasLikedRouter);
 //Get all likes
 router.get("/", async (req, res) => {
   try {
