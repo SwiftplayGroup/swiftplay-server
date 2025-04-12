@@ -6,17 +6,14 @@
   "createdAt": ISODate()
 }
 */
-
-import { Router } from "express";
+import { Router, Request } from "express";
 import likesRouter from "./likes/[likeID].js";
-import hasLikedRouter from "./likes/hasLiked.js";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 
 const router = Router();
 
 router.use("/likes", likesRouter);
-router.use("/likes/hasLiked", hasLikedRouter);
 //Get all likes
 router.get("/", async (req, res) => {
   try {
@@ -42,6 +39,23 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
+  }
+});
+
+router.get("/hasLiked", async (req: Request, res) => {
+  const { userId, postId } = req.query;
+
+  if (typeof userId !== "string" || typeof postId !== "string") {
+    return res.status(400).json({ error: "Missing userId or postId" });
+  }
+
+  try {
+    const like = await database.collection("likes").findOne({ userId, postId });
+
+    res.json({ liked: !!like });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
