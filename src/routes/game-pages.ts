@@ -5,6 +5,7 @@ import database from "#utils/database-generator.js";
 const router = Router();
 router.use("/:gamePageID", gamePageIDRouter);
 
+// Gets a game page.
 router.get("/", async (request, response) => {
 
   try {
@@ -48,6 +49,7 @@ router.get("/", async (request, response) => {
 
 });
 
+// Creates a game page.
 router.post("/", async (request, response) => {
 
   const { name } = request.body;
