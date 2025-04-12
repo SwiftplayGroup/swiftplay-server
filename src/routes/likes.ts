@@ -43,14 +43,16 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/hasLiked", async (req: Request, res) => {
-  const { userId, postId } = req.query;
+  const { userId, threadId } = req.query;
 
-  if (typeof userId !== "string" || typeof postId !== "string") {
-    return res.status(400).json({ error: "Missing userId or postId" });
+  if (typeof userId !== "string" || typeof threadId !== "string") {
+    return res.status(400).json({ error: "Missing userId or threadId" });
   }
 
   try {
-    const like = await database.collection("likes").findOne({ userId, postId });
+    const like = await database
+      .collection("likes")
+      .findOne({ userId, threadId });
 
     res.json({ liked: !!like });
   } catch (error) {
