@@ -76,10 +76,10 @@ router.post("/", async (request, response: Response<any, {accountData: Account; 
 
   }
 
-  if (name.length === 0 || name.length > 255) {
+  if (typeof(name) !== "string" || name.length === 0 || name.length > 128) {
 
     return response.status(400).json({
-      message: "A game page name needs to be at least 1 character and at most 255 characters."
+      message: "Name must be a string that ranges from 1 to 128 characters."
     });
 
   }
@@ -87,7 +87,6 @@ router.post("/", async (request, response: Response<any, {accountData: Account; 
   try {
 
     // Make sure the name doesn't conflict with any other name.
-    
     const similarNameFilter = {
       name: new RegExp(`^${name.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
     }

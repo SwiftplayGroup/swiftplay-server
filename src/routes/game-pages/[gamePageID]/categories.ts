@@ -57,6 +57,41 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
 
   }
 
+  // Restrict the category name to a reasonable length.
+  const categoryName = request.body.name;
+  if (typeof(categoryName) !== "string" || request.body.name.length > 64 || request.body.name.length < 1) {
+
+    return response.status(400).json({
+      message: "Name must be a string that ranges between 1 to 64 characters."
+    });
+
+  }
+
+  // Verify that the name doesn't already exist.
+  try {
+
+    const similarNameFilter = {
+      name: new RegExp(`^${categoryName.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
+    }
+
+    if (await database.collection("gamePages").countDocuments(similarNameFilter) > 0) {
+
+      return response.status(409).json({
+        message: "A category with a similar name already exists in that game page."
+      });
+
+    }
+
+  } catch (error: unknown) {
+
+    console.error(error);
+
+    return response.status(500).json({
+      message: "Something bad happened on our end. Try again later."
+    });
+    
+  }
+
   console.log(`Successfully created run category: `);
 
   return response.status(201).json({
