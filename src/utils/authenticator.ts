@@ -7,7 +7,8 @@ export const defaultPermissions = {
   gamePages: {
     categories: {
       create: false,
-      delete: false
+      delete: false,
+      edit: false
     },
     create: true,
     delete: false,
