@@ -47,15 +47,18 @@ router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
           gamePageID
         },
         {
-          ...(
-            request.query.include_unverified === "true" && request.query.unverified_only !== "true" ? {} : {
-              verificationID: request.query.unverified_only === "true" ? null : (
-                {
-                  $ne: null
-                }
-              )
+          ...(request.query.include_unverified === "true" ? {} : {
+            verificationID: request.query.unverified_only === "true" ? null : {
+              $ne: null
             }
-          )
+          })
+        },
+        {
+          ...(request.query.include_removed === "true" ? {} : {
+            removalID: request.query.removed_only === "true" ? {
+              $ne: null
+            } : null
+          })
         }
       ]
     }).toArray();
