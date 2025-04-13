@@ -2,6 +2,7 @@ import { Request, Router } from "express";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import authenticator, { defaultPermissions } from "#utils/authenticator.js";
+import addToAuditLog from "#utils/addToAuditLog.js";
 
 const router = Router({ mergeParams: true });
 
@@ -101,6 +102,8 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
     await gamePagesCollection.deleteOne({
       _id: gamePage._id
     });
+
+    await addToAuditLog("gamePages.delete", actorID, gamePage._id, response.locals.sessionID);
 
   } catch (error: unknown) {
 

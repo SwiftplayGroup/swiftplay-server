@@ -3,6 +3,7 @@ import gamePageIDRouter from "./game-pages/[gamePageID].js";
 import database from "#utils/database-generator.js";
 import authenticator, { Account, defaultPermissions } from "#utils/authenticator.js";
 import { ObjectId } from "mongodb";
+import addToAuditLog from "#utils/addToAuditLog.js";
 
 const router = Router();
 router.use("/:gamePageID", gamePageIDRouter);
@@ -104,21 +105,7 @@ router.post("/", async (request, response: Response<any, {accountData: Account; 
     console.log(`Successfully created a game page: ${gamePageID}`);
 
     // Add the event to the audit log.
-    const eventsCollection = database.collection("events");
-    const eventEntry = await eventsCollection.findOne({name: "gamePages.create"});
-    let eventID = eventEntry?._id;
-    if (!eventEntry) {
-
-      eventID = (await eventsCollection.insertOne({name: "gamePages.create"})).insertedId;
-
-    }
-
-    await database.collection("auditLog").insertOne({
-      eventID,
-      actorID,
-      targetID: gamePageID,
-      sessionID: response.locals.sessionID
-    });
+    await addToAuditLog("gamePages.create", actorID, gamePageID, response.locals.sessionID);
 
     return response.status(201).json({
       id: gamePageID
