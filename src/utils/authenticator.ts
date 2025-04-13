@@ -5,6 +5,9 @@ import { ObjectId } from "mongodb";
 
 export const defaultPermissions = {
   gamePages: {
+    categories: {
+      create: false
+    },
     create: true,
     delete: false,
     edit: false
