@@ -3,6 +3,7 @@ import database from "#utils/database-generator.js";
 import { Request, Router } from "express";
 import { ObjectId } from "mongodb";
 import categoryIDRouter from "./categories/[categoryID].js";
+import addToAuditLog from "#utils/addToAuditLog.js";
 
 const router = Router({ mergeParams: true });
 
@@ -66,21 +67,31 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
     });
 
   }
-
-  // Verify that the name doesn't already exist.
+  
   try {
 
+    // Verify that the name doesn't already exist.
     const similarNameFilter = {
       name: new RegExp(`^${categoryName.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
     }
 
-    if (await database.collection("gamePages").countDocuments(similarNameFilter) > 0) {
+    if (await database.collection("runCategories").countDocuments(similarNameFilter) > 0) {
 
       return response.status(409).json({
         message: "A category with a similar name already exists in that game page."
       });
 
     }
+
+    // Add category metadata to database
+    const { insertedId: categoryID } = await database.collection("runCategories").insertOne({name: categoryName});
+    console.log(`Successfully created run category: ${categoryID}`);
+
+    // Add the event to the audit log.
+    await addToAuditLog("gamePages.categories.create", actorID, categoryID, response.locals.sessionID);
+
+    // Return the info to the client.
+    return response.status(201).json({categoryID});
 
   } catch (error: unknown) {
 
@@ -91,12 +102,6 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
     });
     
   }
-
-  console.log(`Successfully created run category: `);
-
-  return response.status(201).json({
-    success: true
-  })
 
 });
 
