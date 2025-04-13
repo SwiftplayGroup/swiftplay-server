@@ -1,6 +1,7 @@
 import { Router } from "express";
 import gamePageIDRouter from "./game-pages/[gamePageID].js";
 import database from "#utils/database-generator.js";
+import authenticator from "#utils/authenticator.js";
 
 const router = Router();
 router.use("/:gamePageID", gamePageIDRouter);
@@ -50,6 +51,7 @@ router.get("/", async (request, response) => {
 });
 
 // Creates a game page.
+router.post("/", authenticator);
 router.post("/", async (request, response) => {
 
   const { name } = request.body;
