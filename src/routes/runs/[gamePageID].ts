@@ -41,7 +41,24 @@ router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
   try {
 
     // Return the list of runs.
-    const runDocuments = await database.collection("runs").find({gamePageID}).toArray();
+    const runDocuments = await database.collection("runs").find({
+      $and: [
+        {
+          gamePageID
+        },
+        {
+          ...(
+            request.query.include_unverified === "true" && request.query.unverified_only !== "true" ? {} : {
+              verificationID: request.query.unverified_only === "true" ? null : (
+                {
+                  $ne: null
+                }
+              )
+            }
+          )
+        }
+      ]
+    }).toArray();
     for (const document of runDocuments) {
 
       const run: {[key: string]: unknown} = {...document};
@@ -71,24 +88,25 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response: Resp
   const { gamePageID } = request.params;
   const { time, url } = request.body;
 
-  console.log('Received body:', request.body);
-  console.log('Time:', time);
-  console.log(typeof url);
   let objectID;
   try {
+
     objectID = new ObjectId(gamePageID);
+
   } catch (error) {
+
     return response.status(404).json({ message: "Game page not found." });
+
   }
 
   // Convert time to an integer and validate
   const timeInt = parseInt(time, 10);
   if (isNaN(timeInt) || timeInt <= 0) {
-    return response.status(400).json({ message: "Invalid time provided." });
+    return response.status(400).json({ message: "Time must be an integer, representing milliseconds." });
   }
 
   // Verify that the user provides a valid YouTube video URL
-  const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com\/watch\?v=|youtu\.?be\/).+$/;
+  const youtubeRegex = /^(https?\:\/\/)?((www\.)?youtube\.com\/watch\?v=|youtu\.?be\/).+$/;
   if (!url || typeof url !== "string" || !youtubeRegex.test(url)) {
     return response.status(400).json({ message: "Invalid YouTube video URL." });
   }
@@ -99,7 +117,12 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response: Resp
   try {
 
     const createdAt = new Date();
-    const result = await database.collection("runs").insertOne({ gamePageID: objectID, time: timeInt, url, creatorID: response.locals.accountData._id });
+    const result = await database.collection("runs").insertOne({ 
+      gamePageID: objectID, 
+      time: timeInt, 
+      url, 
+      creatorID: response.locals.accountData._id 
+    });
     // Return a 201 status code on success, along with the run ID
     return response.status(201).json({ id: result.insertedId });
   } catch (error) {
