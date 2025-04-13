@@ -55,6 +55,43 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
 
   }
 
+  let gamePage;
+
+  try {
+    
+    const gamePageID = new ObjectId(request.params.gamePageID);
+    gamePage = await database.collection("gamePages").findOne({
+      _id: new ObjectId(gamePageID)
+    });
+
+    if (!gamePage) {
+
+      return response.status(404).json({
+        message: "Game page not found.",
+      });
+
+    }
+
+  } catch (error: unknown) {
+
+    if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
+
+      return response.status(404).json({
+        message: "Game page not found.",
+      });
+
+    } else {
+
+      console.log(error);
+
+      return response.status(500).json({
+        message: "Something bad happened on our side. Try again later.",
+      });
+
+    }
+    
+  }
+
   return response.status(204).json({
     success: true
   })
