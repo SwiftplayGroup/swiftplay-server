@@ -46,6 +46,7 @@ router.delete("/", authenticator);
 router.delete("/", async (request: Request<{ gamePageID: string }>, response) => {
 
   // Verify permissions.
+  // TODO: Check game page permissions.
   const { permissionOverwrites, _id: actorID } = response.locals.accountData;
   if (permissionOverwrites?.gamePages?.delete === false || (!defaultPermissions.gamePages.delete && !permissionOverwrites?.gamePages?.delete)) {
 
@@ -56,11 +57,12 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
   }
 
   let gamePage;
+  let gamePagesCollection = database.collection("gamePages");
 
   try {
     
     const gamePageID = new ObjectId(request.params.gamePageID);
-    gamePage = await database.collection("gamePages").findOne({
+    gamePage = await gamePagesCollection.findOne({
       _id: new ObjectId(gamePageID)
     });
 
@@ -90,6 +92,22 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
 
     }
     
+  }
+
+  try {
+
+    // Delete the game page from the records.
+    // TODO: Delete associated runs.
+    await gamePagesCollection.deleteOne({
+      _id: gamePage._id
+    });
+
+  } catch (error: unknown) {
+
+    return response.status(500).json({
+      message: "Something bad happened on our side. Try again later.",
+    });
+
   }
 
   return response.status(204).json({
