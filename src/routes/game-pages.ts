@@ -1,7 +1,7 @@
-import { Router } from "express";
+import { Router, Response } from "express";
 import gamePageIDRouter from "./game-pages/[gamePageID].js";
 import database from "#utils/database-generator.js";
-import authenticator from "#utils/authenticator.js";
+import authenticator, { Account, defaultPermissions } from "#utils/authenticator.js";
 
 const router = Router();
 router.use("/:gamePageID", gamePageIDRouter);
@@ -52,7 +52,17 @@ router.get("/", async (request, response) => {
 
 // Creates a game page.
 router.post("/", authenticator);
-router.post("/", async (request, response) => {
+router.post("/", async (request, response: Response<any, {accountData: Account}>) => {
+
+  // Verify permissions.
+  const { permissionOverwrites } = response.locals.accountData;
+  if (permissionOverwrites?.gamePages?.create === false || !defaultPermissions.gamePages.create) {
+
+    return response.status(403).json({
+      message: "You don't have permission to do that."
+    });
+
+  }
 
   const { name } = request.body;
   if (!name || typeof(name) !== "string") {
