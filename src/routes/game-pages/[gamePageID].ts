@@ -58,6 +58,37 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
 
   }
 
+  // Verify properties.
+  for (const key of Object.keys(request.body)) {
+
+    const keyChecks: {[key: string]: (value: unknown) => boolean | string} = {
+      name: (value: unknown) => (
+        typeof(value) !== "string" ? "Name must be a string." : (
+          value.length > 128 || value.length < 1 ? "Name must be between 1 to 128 characters." : true
+        )
+      )
+    };
+
+    const keyCheck = keyChecks[key];
+    if (!keyCheck) {
+
+      return response.status(400).json({
+        message: `${key} is an invalid property.`
+      });
+
+    }
+    
+    const responseMessage = keyCheck(request.body[key]);
+    if (typeof(responseMessage) !== "boolean") {
+
+      return response.status(400).json({
+        message: responseMessage
+      });
+
+    }
+
+  }
+
   let gamePage;
   let gamePagesCollection = database.collection("gamePages");
 
