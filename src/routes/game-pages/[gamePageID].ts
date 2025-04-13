@@ -129,6 +129,13 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
 
   try {
 
+    await gamePagesCollection.updateOne(
+      {_id: gamePage._id},
+      {
+        $set: request.body
+      }
+    );
+
     await addToAuditLog("gamePages.edit", actorID, gamePage._id, response.locals.sessionID)
 
   } catch (error: unknown) {
