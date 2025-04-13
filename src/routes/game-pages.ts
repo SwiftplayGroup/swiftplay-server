@@ -13,8 +13,10 @@ router.get("/", async (request, response) => {
 
   try {
 
-    // Get all pages from the database.
-    const documents = await database.collection("gamePages").find({}).toArray();
+    // Get game pages from the database.
+    const documents = await database.collection("gamePages").find(request.query.name ? {
+      name: new RegExp(`${request.query.name}`, "gi")
+    } : {}).toArray();
     const pages = [];
 
     for (const document of documents) {
