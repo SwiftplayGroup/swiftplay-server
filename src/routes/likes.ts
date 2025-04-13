@@ -61,4 +61,22 @@ router.get("/hasLiked", async (req: Request, res) => {
   }
 });
 
+router.delete("/deleteLike", async (req: Request, res) => {
+  const { userId, threadId } = req.query;
+
+  if (typeof userId != "string" || typeof threadId != "string") {
+    return res.status(400).json({ error: "Missing userId or threadId" });
+  }
+
+  try {
+    const like = await database
+      .collection("likes")
+      .deleteOne({ userId, threadId });
+    res.status(201).json({ like: like, message: "Like deleted." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
 export default router;
