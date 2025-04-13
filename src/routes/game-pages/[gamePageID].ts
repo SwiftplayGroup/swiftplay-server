@@ -1,6 +1,7 @@
 import { Request, Router } from "express";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
+import authenticator, { defaultPermissions } from "#utils/authenticator.js";
 
 const router = Router({ mergeParams: true });
 
@@ -38,6 +39,26 @@ router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
   }
 
   return response.json(page);
+});
+
+// Delete a game page.
+router.delete("/", authenticator);
+router.delete("/", async (request: Request<{ gamePageID: string }>, response) => {
+
+  // Verify permissions.
+  const { permissionOverwrites, _id: actorID } = response.locals.accountData;
+  if (permissionOverwrites?.gamePages?.delete === false || (!defaultPermissions.gamePages.delete && !permissionOverwrites?.gamePages?.delete)) {
+
+    return response.status(403).json({
+      message: "You don't have permission to do that."
+    });
+
+  }
+
+  return response.status(204).json({
+    success: true
+  })
+
 });
 
 export default router;
