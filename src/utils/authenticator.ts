@@ -10,6 +10,7 @@ export const defaultPermissions = {
 }
 
 export type Account = {
+  _id: ObjectId,
   permissionOverwrites: {
     gamePages: {
       create?: boolean;
@@ -35,6 +36,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
           // Save account data.
           const accountData = await database.collection("accounts").findOne({_id: accountID});
+          response.locals.sessionID = session._id;
           response.locals.accountData = accountData;
 
           next();

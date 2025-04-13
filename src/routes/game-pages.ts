@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import gamePageIDRouter from "./game-pages/[gamePageID].js";
 import database from "#utils/database-generator.js";
 import authenticator, { Account, defaultPermissions } from "#utils/authenticator.js";
+import { ObjectId } from "mongodb";
 
 const router = Router();
 router.use("/:gamePageID", gamePageIDRouter);
@@ -52,10 +53,10 @@ router.get("/", async (request, response) => {
 
 // Creates a game page.
 router.post("/", authenticator);
-router.post("/", async (request, response: Response<any, {accountData: Account}>) => {
+router.post("/", async (request, response: Response<any, {accountData: Account; sessionID: ObjectId}>) => {
 
   // Verify permissions.
-  const { permissionOverwrites } = response.locals.accountData;
+  const { permissionOverwrites, _id: actorID } = response.locals.accountData;
   if (permissionOverwrites?.gamePages?.create === false || !defaultPermissions.gamePages.create) {
 
     return response.status(403).json({
@@ -85,10 +86,12 @@ router.post("/", async (request, response: Response<any, {accountData: Account}>
   try {
 
     // Make sure the name doesn't conflict with any other name.
+    
     const similarNameFilter = {
-      name: new RegExp(`^${name}$`, "ig")
+      name: new RegExp(`^${name.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
     }
 
+    console.log(await database.collection("gamePages").countDocuments(similarNameFilter));
     if (await database.collection("gamePages").countDocuments(similarNameFilter) > 0) {
 
       return response.status(409).json({
@@ -100,6 +103,23 @@ router.post("/", async (request, response: Response<any, {accountData: Account}>
     // Add the game page to the database.
     const { insertedId: gamePageID } = await database.collection("gamePages").insertOne({name});
     console.log(`Successfully created a game page: ${gamePageID}`);
+
+    // Add the event to the audit log.
+    const eventsCollection = database.collection("events");
+    const eventEntry = await eventsCollection.findOne({name: "gamePages.create"});
+    let eventID = eventEntry?._id;
+    if (!eventEntry) {
+
+      eventID = (await eventsCollection.insertOne({name: "gamePages.create"})).insertedId;
+
+    }
+
+    await database.collection("auditLog").insertOne({
+      eventID,
+      actorID,
+      targetID: gamePageID,
+      sessionID: response.locals.sessionID
+    });
 
     return response.status(201).json({
       id: gamePageID
