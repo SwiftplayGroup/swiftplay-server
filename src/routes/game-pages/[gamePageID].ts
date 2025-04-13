@@ -207,8 +207,12 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
 
   try {
 
+    // Delete associated runs.
+    await database.collection("runs").deleteMany({
+      gamePageID: gamePage._id
+    });
+
     // Delete the game page from the records.
-    // TODO: Delete associated runs.
     await gamePagesCollection.deleteOne({
       _id: gamePage._id
     });
@@ -216,6 +220,8 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
     await addToAuditLog("gamePages.delete", actorID, gamePage._id, response.locals.sessionID);
 
   } catch (error: unknown) {
+
+    console.warn(error);
 
     return response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
