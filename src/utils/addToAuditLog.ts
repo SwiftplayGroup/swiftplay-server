@@ -2,7 +2,7 @@
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 
-async function addToAuditLog(eventName: "gamePages.categories.create" | "gamePages.categories.delete" | "gamePages.create" | "gamePages.delete" | "gamePages.edit", actorID: ObjectId, targetID: ObjectId, sessionID: ObjectId) {
+async function addToAuditLog(eventName: "gamePages.categories.create" | "gamePages.categories.delete" | "gamePages.categories.edit" | "gamePages.create" | "gamePages.delete" | "gamePages.edit", actorID: ObjectId, targetID: ObjectId, sessionID: ObjectId) {
 
   const eventsCollection = database.collection("events");
   const eventEntry = await eventsCollection.findOne({name: eventName});
