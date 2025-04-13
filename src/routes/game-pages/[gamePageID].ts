@@ -3,6 +3,7 @@ import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import authenticator, { defaultPermissions } from "#utils/authenticator.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
+import categoriesRouter from "./[gamePageID]/categories.js"
 
 const router = Router({ mergeParams: true });
 
@@ -189,5 +190,7 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
   })
 
 });
+
+router.use("/categories", categoriesRouter)
 
 export default router;
