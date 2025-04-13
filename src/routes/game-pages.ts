@@ -64,6 +64,7 @@ router.post("/", async (request, response: Response<any, {accountData: Account}>
 
   }
 
+  // Verify that a name was provided.
   const { name } = request.body;
   if (!name || typeof(name) !== "string") {
 
@@ -83,6 +84,20 @@ router.post("/", async (request, response: Response<any, {accountData: Account}>
 
   try {
 
+    // Make sure the name doesn't conflict with any other name.
+    const similarNameFilter = {
+      name: new RegExp(`^${name}$`, "ig")
+    }
+
+    if (await database.collection("gamePages").countDocuments(similarNameFilter) > 0) {
+
+      return response.status(409).json({
+        message: "A game page with a similar name already exists."
+      });
+
+    }
+
+    // Add the game page to the database.
     const { insertedId: gamePageID } = await database.collection("gamePages").insertOne({name});
     console.log(`Successfully created a game page: ${gamePageID}`);
 
