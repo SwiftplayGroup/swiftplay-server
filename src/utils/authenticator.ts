@@ -3,6 +3,20 @@ import database from "./database-generator.js";
 import { verify } from "argon2";
 import { ObjectId } from "mongodb";
 
+export const defaultPermissions = {
+  gamePages: {
+    create: true
+  }
+}
+
+export type Account = {
+  permissionOverwrites: {
+    gamePages: {
+      create?: boolean;
+    }
+  }
+}
+
 async function authenticator(request: Request, response: Response, next: NextFunction) {
 
   try {
