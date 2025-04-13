@@ -129,7 +129,7 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
 
   try {
 
-    
+    await addToAuditLog("gamePages.edit", actorID, gamePage._id, response.locals.sessionID)
 
   } catch (error: unknown) {
 

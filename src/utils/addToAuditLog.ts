@@ -2,7 +2,7 @@
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 
-async function addToAuditLog(eventName: "gamePages.create" | "gamePages.delete", actorID: ObjectId, targetID: ObjectId, sessionID: ObjectId) {
+async function addToAuditLog(eventName: "gamePages.create" | "gamePages.delete" | "gamePages.edit", actorID: ObjectId, targetID: ObjectId, sessionID: ObjectId) {
 
   const eventsCollection = database.collection("events");
   const eventEntry = await eventsCollection.findOne({name: eventName});
