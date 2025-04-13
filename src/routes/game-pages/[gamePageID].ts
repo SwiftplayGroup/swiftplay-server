@@ -191,6 +191,6 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
 
 });
 
-router.use("/categories", categoriesRouter)
+router.use("/categories", categoriesRouter);
 
 export default router;

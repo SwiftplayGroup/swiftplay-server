@@ -2,6 +2,7 @@ import authenticator, { defaultPermissions } from "#utils/authenticator.js";
 import database from "#utils/database-generator.js";
 import { Request, Router } from "express";
 import { ObjectId } from "mongodb";
+import categoryIDRouter from "./categories/[categoryID].js";
 
 const router = Router({ mergeParams: true });
 
@@ -41,7 +42,7 @@ router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
   return response.json(page);
 });
 
-// Edit a game page.
+// Create a run category.
 router.post("/", authenticator);
 router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
 
@@ -63,5 +64,7 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
   })
 
 });
+
+router.use("/:categoryID", categoryIDRouter);
 
 export default router;
