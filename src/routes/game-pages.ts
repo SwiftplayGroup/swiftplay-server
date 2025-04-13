@@ -57,7 +57,7 @@ router.post("/", async (request, response: Response<any, {accountData: Account; 
 
   // Verify permissions.
   const { permissionOverwrites, _id: actorID } = response.locals.accountData;
-  if (permissionOverwrites?.gamePages?.create === false || !defaultPermissions.gamePages.create) {
+  if (permissionOverwrites?.gamePages?.create === false || (!defaultPermissions.gamePages.create && !permissionOverwrites?.gamePages?.create)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."
@@ -91,7 +91,6 @@ router.post("/", async (request, response: Response<any, {accountData: Account; 
       name: new RegExp(`^${name.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
     }
 
-    console.log(await database.collection("gamePages").countDocuments(similarNameFilter));
     if (await database.collection("gamePages").countDocuments(similarNameFilter) > 0) {
 
       return response.status(409).json({
