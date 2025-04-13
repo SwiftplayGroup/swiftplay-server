@@ -18,7 +18,7 @@ export const defaultPermissions = {
 
 export type Account = {
   _id: ObjectId,
-  permissionOverwrites: {
+  permissionOverrides: {
     gamePages: {
       create?: boolean;
     }

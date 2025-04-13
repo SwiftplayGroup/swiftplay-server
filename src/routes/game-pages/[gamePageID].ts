@@ -49,8 +49,8 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverwrites, _id: actorID } = response.locals.accountData;
-  if (permissionOverwrites?.gamePages?.edit === false || (!defaultPermissions.gamePages.edit && !permissionOverwrites?.gamePages?.edit)) {
+  const { permissionOverrides, _id: actorID } = response.locals.accountData;
+  if (permissionOverrides?.gamePages?.edit === false || (!defaultPermissions.gamePages.edit && !permissionOverrides?.gamePages?.edit)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."
@@ -158,8 +158,8 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverwrites, _id: actorID } = response.locals.accountData;
-  if (permissionOverwrites?.gamePages?.delete === false || (!defaultPermissions.gamePages.delete && !permissionOverwrites?.gamePages?.delete)) {
+  const { permissionOverrides, _id: actorID } = response.locals.accountData;
+  if (permissionOverrides?.gamePages?.delete === false || (!defaultPermissions.gamePages.delete && !permissionOverrides?.gamePages?.delete)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."
