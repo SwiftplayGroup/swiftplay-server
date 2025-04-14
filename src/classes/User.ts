@@ -2,6 +2,7 @@ import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import { NoPermissionError } from "./errors/NoPermissionError.js";
 import { Response } from "express";
+import { UserNotFoundError } from "./errors/UserNotFoundError.js";
 
 export type PermissionOverride = {
   gamePages?: {
@@ -15,7 +16,12 @@ export type PermissionOverride = {
     edit?: number
   },
   groups?: {
-    create?: number
+    create?: number,
+    delete?: number,
+    members?: {
+      add?: number;
+      join?: number;
+    }
   }
 }
 
@@ -37,7 +43,8 @@ type Permission = (
   "gamePages.runs.create" |
   "groups.create" |
   "groups.delete" |
-  "groups.join"
+  "groups.members.add" |
+  "groups.members.join"
 )
 
 export default class User {
@@ -59,7 +66,11 @@ export default class User {
     },
     groups: {
       create: 1,
-      delete: 0
+      delete: 0,
+      members: {
+        add: 0,
+        join: 1
+      }
     }
   };
 
@@ -70,16 +81,32 @@ export default class User {
 
   }
 
-  static async getFromID(userID: ObjectId): Promise<User> {
+  static async getFromID(userID: ObjectId | string): Promise<User> {
 
-    const data = await database.collection("users").findOne({_id: userID});
-    if (!data) {
+    try {
 
-      throw new Error("User not found");
+      const data = await database.collection("users").findOne({_id: new ObjectId(userID)});
+      if (!data) {
+
+        throw new UserNotFoundError(userID);
+
+      }
+      
+      return new User(data);
+
+    } catch (error) {
+
+      if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
+
+        throw new UserNotFoundError(userID);
+  
+      } else {
+
+        throw error;
+
+      }
 
     }
-
-    return new User(data);
 
   }
 
@@ -125,7 +152,7 @@ export default class User {
 
         if (typeof(selectedOverridePermissionObject[permission]) == "number") {
 
-          overridePermissionLevel = selectedDefaultPermissionObject[permission];
+          overridePermissionLevel = selectedOverridePermissionObject[permission];
   
         } else {
   
@@ -141,7 +168,7 @@ export default class User {
 
     }
 
-    if ((typeof(overridePermissionLevel) === "number" && overridePermissionLevel < requiredPermissionLevel) || defaultPermissionLevel < requiredPermissionLevel) {
+    if (typeof(overridePermissionLevel) === "number" ? overridePermissionLevel < requiredPermissionLevel : defaultPermissionLevel < requiredPermissionLevel) {
   
       throw new NoPermissionError();
   
