@@ -11,7 +11,8 @@
     "declaration": true,
     "resolveJsonModule": true,
     "paths": {
-      "#utils/*": ["src/utils/*"]
+      "#utils/*": ["src/utils/*"],
+      "#classes/*": ["src/classes/*"]
     },
     "sourceMap": true
   },

@@ -2,41 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import database from "./database-generator.js";
 import { verify } from "argon2";
 import { ObjectId } from "mongodb";
-
-export const defaultPermissions = {
-  gamePages: {
-    categories: {
-      create: 0,
-      delete: 0,
-      edit: 0
-    },
-    create: 1,
-    delete: 0,
-    edit: 0
-  },
-  groups: {
-    create: 1
-  }
-}
-
-export type Account = {
-  _id: ObjectId,
-  permissionOverrides: {
-    gamePages: {
-      categories: {
-        create: number,
-        delete: number,
-        edit: number
-      },
-      create: number,
-      delete: number,
-      edit: number
-    },
-    groups: {
-      create: number
-    }
-  }
-}
+import User from "src/classes/User.js";
 
 async function authenticator(request: Request, response: Response, next: NextFunction) {
 
@@ -55,9 +21,9 @@ async function authenticator(request: Request, response: Response, next: NextFun
         if (await verify(session.tokenHash, token)) {
 
           // Save account data.
-          const account = await database.collection("users").findOne({_id: accountID});
-          response.locals.sessionID = session._id;
-          response.locals.account = account;
+          const user = await User.getFromID(accountID);
+          user.setSessionID(session._id);
+          response.locals.user = user;
 
           next();
           return;

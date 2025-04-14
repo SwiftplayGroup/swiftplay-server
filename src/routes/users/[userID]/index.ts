@@ -46,7 +46,7 @@ router.get("/", async (request: Request<{ accountID: string }>, response) => {
 router.patch("/", authenticator);
 router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
-  const { _id: actorID } = response.locals.account;
+  const { _id: actorID } = response.locals.user;
 
   // Verify properties.
   const unsetPermissions: Record<string, any> = {};
@@ -91,7 +91,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
             } else if (typeof(permissionValue) === "number") {
 
               // Verify that the person has permission to change a specific permission.
-              let permissionGroup = response.locals.account.permissionOverrides;
+              let permissionGroup = response.locals.user.permissionOverrides;
               for (const name of nameGroups) {
 
                 permissionGroup = permissionGroup[name];

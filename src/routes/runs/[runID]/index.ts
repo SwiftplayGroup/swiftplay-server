@@ -18,6 +18,8 @@ runIDRouter.get("/", async (request: Request<{ runID: string }>, response: Respo
 
   } catch (error: unknown) {
 
+    console.warn(error);
+
     return response.status(404).json({ message: "Invalid game page ID or run ID." });
 
   }
@@ -126,7 +128,7 @@ runIDRouter.patch("/", async (request: Request<{ gamePageID: string; runID: stri
 
       }
 
-      if ((key === "isVerified" || key === "creatorID") && !response.locals.account.isModerator) {
+      if ((key === "isVerified" || key === "creatorID") && !response.locals.user.isModerator) {
 
         return response.status(403).json({
           message: `You don't have permission to modify the ${key} key.`

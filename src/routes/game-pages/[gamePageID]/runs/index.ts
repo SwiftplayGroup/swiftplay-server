@@ -1,7 +1,8 @@
-import { Request, Response, Router } from "express";
+import { Request, Router } from "express";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import authenticator from "#utils/authenticator.js";
+import { AuthenticatedResponse } from "#classes/User.js";
 
 const runsRouter = Router({mergeParams: true});
 
@@ -84,7 +85,10 @@ runsRouter.get("/", async (request: Request<{ gamePageID: string }>, response) =
 });
 
 runsRouter.post("/", authenticator);
-runsRouter.post("/", async (request: Request<{ gamePageID: string }>, response: Response) => {
+runsRouter.post("/", async (request: Request<{ gamePageID: string }>, response: AuthenticatedResponse) => {
+
+  const { user } = response.locals;
+  user.verifyPermission("gamePages.runs.create", 1);
 
   const { gamePageID } = request.params;
   const { time, url } = request.body;
@@ -119,7 +123,7 @@ runsRouter.post("/", async (request: Request<{ gamePageID: string }>, response: 
       gamePageID: objectID, 
       time: timeInt, 
       url, 
-      creatorID: response.locals.account._id 
+      creatorID: response.locals.user._id 
     });
     // Return a 201 status code on success, along with the run ID
     return response.status(201).json({ id: result.insertedId });

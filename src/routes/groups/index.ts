@@ -1,22 +1,17 @@
 import database from "#utils/database-generator.js";
 import { Router } from "express";
 import addToAuditLog from "#utils/addToAuditLog.js";
-import authenticator, { defaultPermissions } from "#utils/authenticator.js";
+import authenticator from "#utils/authenticator.js";
+import { AuthenticatedResponse } from "#classes/User.js";
 
 const router = Router();
 
 router.post("/", authenticator);
-router.post("/", async (request, response) => {
+router.post("/", async (request, response: AuthenticatedResponse) => {
 
   // Verify permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.groups?.create === 0 || (!defaultPermissions.groups.create && !permissionOverrides?.groups?.create)) {
-
-    return response.status(403).json({
-      message: "You don't have permission to do that."
-    });
-
-  }
+  const { user } = response.locals;
+  user.verifyPermission("groups.create", 1);
   
   // Validate input.
   const { name } = request.body;
@@ -46,15 +41,15 @@ router.post("/", async (request, response) => {
 
     // Add category metadata to database
     const { insertedId: groupID } = await database.collection("groups").insertOne({name});
-    await addToAuditLog("groups.create", actorID, groupID, response.locals.sessionID);
+    await addToAuditLog("groups.create", user._id, groupID, user.getSessionID());
 
     console.log(`Successfully created group: ${groupID}`);
 
     await database.collection("groupMembers").insertOne({
       groupID,
-      userID: response.locals.account._id
+      userID: response.locals.user._id
     });
-    await addToAuditLog("groups.join", actorID, groupID, response.locals.sessionID);
+    await addToAuditLog("groups.join", user._id, groupID, user.getSessionID());
 
     // Return the info to the client.
     return response.status(201).json({groupID});

@@ -10,11 +10,13 @@ export type EventName = (
   "gamePages.create" | 
   "gamePages.delete" | 
   "gamePages.edit" |
+  "gamePages.runs.create" |
   "groups.create" |
+  "groups.delete" |
   "groups.join"
 )
 
-async function addToAuditLog(eventName: EventName, actorID: ObjectId, targetID: ObjectId, sessionID: ObjectId) {
+async function addToAuditLog(eventName: EventName, actorID: ObjectId, targetID: ObjectId, sessionID?: ObjectId) {
 
   const eventsCollection = database.collection("events");
   const eventEntry = await eventsCollection.findOne({name: eventName});

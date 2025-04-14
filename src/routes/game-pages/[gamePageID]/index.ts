@@ -1,10 +1,11 @@
 import { Request, Router } from "express";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
-import authenticator, { defaultPermissions } from "#utils/authenticator.js";
+import authenticator from "#utils/authenticator.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
 import categoriesRouter from "./categories/index.js";
 import runsRouter from "./runs/index.js";
+import { AuthenticatedResponse } from "#classes/User.js";
 
 const router = Router({ mergeParams: true });
 
@@ -46,18 +47,12 @@ router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
 
 // Edit a game page.
 router.patch("/", authenticator);
-router.patch("/", async (request: Request<{ gamePageID: string }>, response) => {
+router.patch("/", async (request: Request<{ gamePageID: string }>, response: AuthenticatedResponse) => {
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.edit === 0 || (!defaultPermissions.gamePages.edit && !permissionOverrides?.gamePages?.edit)) {
-
-    return response.status(403).json({
-      message: "You don't have permission to do that."
-    });
-
-  }
+  const { user } = response.locals;
+  user.verifyPermission("gamePages.edit", 1);
 
   // Verify properties.
   for (const key of Object.keys(request.body)) {
@@ -137,7 +132,7 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
       }
     );
 
-    await addToAuditLog("gamePages.edit", actorID, gamePage._id, response.locals.sessionID);
+    await addToAuditLog("gamePages.edit", user._id, gamePage._id, user.getSessionID());
 
   } catch (error: unknown) {
 
@@ -157,18 +152,12 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
 
 // Delete a game page.
 router.delete("/", authenticator);
-router.delete("/", async (request: Request<{ gamePageID: string }>, response) => {
+router.delete("/", async (request: Request<{ gamePageID: string }>, response: AuthenticatedResponse) => {
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.delete === 0 || (!defaultPermissions.gamePages.delete && !permissionOverrides?.gamePages?.delete)) {
-
-    return response.status(403).json({
-      message: "You don't have permission to do that."
-    });
-
-  }
+  const { user } = response.locals;
+  user.verifyPermission("gamePages.delete", 1);
 
   let gamePage;
   const gamePagesCollection = database.collection("gamePages");
@@ -220,7 +209,7 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
       _id: gamePage._id
     });
 
-    await addToAuditLog("gamePages.delete", actorID, gamePage._id, response.locals.sessionID);
+    await addToAuditLog("gamePages.delete", user._id, gamePage._id, user.getSessionID());
 
   } catch (error: unknown) {
 
