@@ -1,8 +1,8 @@
 import database from "#utils/database-generator.js";
 import { Router } from "express";
 import { hash as hashString } from "argon2";
-import accountIDRouter from "./accounts/[accountID].js";
-import accountLikesRouter from "./accounts/likes/[accountID].js";
+import accountIDRouter from "./[userID]/index.js";
+import accountLikesRouter from "./[userID]/likes/index.js";
 
 const router = Router();
 router.use("/:accountID", accountIDRouter);

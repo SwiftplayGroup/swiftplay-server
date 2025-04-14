@@ -3,7 +3,8 @@ import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import authenticator, { defaultPermissions } from "#utils/authenticator.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
-import categoriesRouter from "./[gamePageID]/categories.js"
+import categoriesRouter from "./categories/index.js";
+import runsRouter from "./runs/index.js";
 
 const router = Router({ mergeParams: true });
 
@@ -90,7 +91,7 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
   }
 
   let gamePage;
-  let gamePagesCollection = database.collection("gamePages");
+  const gamePagesCollection = database.collection("gamePages");
 
   try {
     
@@ -136,9 +137,11 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
       }
     );
 
-    await addToAuditLog("gamePages.edit", actorID, gamePage._id, response.locals.sessionID)
+    await addToAuditLog("gamePages.edit", actorID, gamePage._id, response.locals.sessionID);
 
   } catch (error: unknown) {
+
+    console.warn(error);
 
     return response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
@@ -148,7 +151,7 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
 
   return response.status(200).json({
     success: true
-  })
+  });
 
 });
 
@@ -168,7 +171,7 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
   }
 
   let gamePage;
-  let gamePagesCollection = database.collection("gamePages");
+  const gamePagesCollection = database.collection("gamePages");
 
   try {
     
@@ -231,10 +234,11 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
 
   return response.status(204).json({
     success: true
-  })
+  });
 
 });
 
 router.use("/categories", categoriesRouter);
+router.use("/runs", runsRouter);
 
 export default router;

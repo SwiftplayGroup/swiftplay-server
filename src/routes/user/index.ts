@@ -1,5 +1,5 @@
 import { Router } from "express";
-import sessionsRouter from "./account/sessions.js";
+import sessionsRouter from "./sessions/index.js";
 import authenticator from "#utils/authenticator.js";
 
 const router = Router();

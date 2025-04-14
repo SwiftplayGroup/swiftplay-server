@@ -3,40 +3,46 @@ import { ObjectId } from "mongodb";
 import database from "#utils/database-generator.js";
 import authenticator from "#utils/authenticator.js";
 
-const router = Router({ mergeParams: true });
+const runIDRouter = Router({ mergeParams: true });
 
-router.get("/", async (request: Request<{ gamePageID: string; runID: string }>, response: Response) => {
-    const { gamePageID, runID } = request.params;
+runIDRouter.get("/", async (request: Request<{ runID: string }>, response: Response) => {
 
-    let gamePageObjectID;
-    let runObjectID;
+  const { runID } = request.params;
 
-    try {
-        gamePageObjectID = new ObjectId(gamePageID);
-        runObjectID = new ObjectId(runID);
-    } catch (error) {
-        return response.status(404).json({ message: "Invalid game page ID or run ID." });
+  let gamePageObjectID;
+  let runObjectID;
+
+  try {
+
+    runObjectID = new ObjectId(runID);
+
+  } catch (error: unknown) {
+
+    return response.status(404).json({ message: "Invalid game page ID or run ID." });
+
+  }
+
+  try {
+
+    const run = await database.collection("runs").findOne({
+      gamePageID: gamePageObjectID,
+      _id: runObjectID
+    });
+
+    if (!run) {
+      return response.status(404).json({ message: "Run not found." });
     }
 
-    try {
-        const run = await database.collection("runs").findOne({
-            gamePageID: gamePageObjectID,
-            _id: runObjectID
-        });
+    return response.json(run);
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ message: "Internal server error. Sowwy!" });
+  }
 
-        if (!run) {
-            return response.status(404).json({ message: "Run not found." });
-        }
-
-        return response.json(run);
-    } catch (error) {
-        console.error(error);
-        return response.status(500).json({ message: "Internal server error. Sowwy!" });
-    }
 });
 
-router.patch("/", authenticator);
-router.patch("/", async (request: Request<{ gamePageID: string; runID: string }>, response) => {
+runIDRouter.patch("/", authenticator);
+runIDRouter.patch("/", async (request: Request<{ gamePageID: string; runID: string }>, response) => {
 
   // Confirm that the run ID is valid.
   let runID;
@@ -88,7 +94,7 @@ router.patch("/", async (request: Request<{ gamePageID: string; runID: string }>
 
     const modifications = request.body.modifications;
 
-    if (!modifications || !(typeof(modifications) === "object" && !(modifications instanceof Array))) {
+    if (!modifications || !(typeof (modifications) === "object" && !(modifications instanceof Array))) {
 
       return response.status(400).json({
         message: `Your request body is missing a modifications object.`
@@ -96,20 +102,20 @@ router.patch("/", async (request: Request<{ gamePageID: string; runID: string }>
 
     }
 
-    const santitizedModifications: {[key: string]: unknown} = {};
+    const santitizedModifications: { [key: string]: unknown } = {};
     for (const key of Object.keys(modifications)) {
 
-      const validationCheckers: {[key: string]: (value: unknown) => boolean} = {
-        isVerified: (value: unknown) => typeof(value) === "boolean",
-        creatorID: (value: unknown) => typeof(value) === "string",
-        time: (value: unknown) => typeof(value) === "number",
-        url: (value: unknown) => typeof(value) === "string"
+      const validationCheckers: { [key: string]: (value: unknown) => boolean } = {
+        isVerified: (value: unknown) => typeof (value) === "boolean",
+        creatorID: (value: unknown) => typeof (value) === "string",
+        time: (value: unknown) => typeof (value) === "number",
+        url: (value: unknown) => typeof (value) === "string"
       };
 
       if (!validationCheckers[key]) {
 
         continue;
-        
+
       }
 
       if (!validationCheckers[key](modifications[key])) {
@@ -148,13 +154,13 @@ router.patch("/", async (request: Request<{ gamePageID: string; runID: string }>
     });
 
   }
-  
+
   return response.status(200).json({});
 
 });
 
-router.delete("/", authenticator);
-router.delete("/", async (request: Request<{ gamePageID: string; runID: string }>, response) => {
+runIDRouter.delete("/", authenticator);
+runIDRouter.delete("/", async (request: Request<{ gamePageID: string; runID: string }>, response) => {
 
   // Confirm that the run ID is valid.
   let runID;
@@ -229,4 +235,4 @@ router.delete("/", async (request: Request<{ gamePageID: string; runID: string }
 
 });
 
-export default router;
+export default runIDRouter;

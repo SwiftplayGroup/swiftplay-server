@@ -31,7 +31,7 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
         )
       ),
       description: (value: unknown) => (
-        typeof(value) === undefined ? true : (
+        value === undefined ? true : (
           typeof(value) !== "string" ? "Description must be a string." : (
             value.length > 1024 || value.length < 0 ? "Description must be between 0 to 1024 characters." : true
           )
@@ -60,7 +60,7 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
   }
 
   let category;
-  let categoriesCollection = database.collection("runCategories");
+  const categoriesCollection = database.collection("runCategories");
 
   try {
     
@@ -82,7 +82,7 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
     if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
 
       return response.status(404).json({
-        message: "Catgeory not found.",
+        message: "Category not found.",
       });
 
     } else {
@@ -106,9 +106,11 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
       }
     );
 
-    await addToAuditLog("gamePages.categories.edit", actorID, category._id, response.locals.sessionID)
+    await addToAuditLog("gamePages.categories.edit", actorID, category._id, response.locals.sessionID);
 
   } catch (error: unknown) {
+
+    console.warn(error);
 
     return response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
@@ -118,7 +120,7 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
 
   return response.status(200).json({
     success: true
-  })
+  });
 
 });
 

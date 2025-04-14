@@ -1,13 +1,11 @@
 import { Request, Response, Router } from "express";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
-import runIDRouter from "./[gamePageID]/[runID].js";
 import authenticator from "#utils/authenticator.js";
 
-const router = Router({mergeParams: true});
-router.use("/:runID", runIDRouter);
+const runsRouter = Router({mergeParams: true});
 
-router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
+runsRouter.get("/", async (request: Request<{ gamePageID: string }>, response) => {
 
   // Verify that the user provides a valid game page ID.
   let gamePageID;
@@ -85,8 +83,8 @@ router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
 
 });
 
-router.post("/", authenticator);
-router.post("/", async (request: Request<{ gamePageID: string }>, response: Response) => {
+runsRouter.post("/", authenticator);
+runsRouter.post("/", async (request: Request<{ gamePageID: string }>, response: Response) => {
 
   const { gamePageID } = request.params;
   const { time, url } = request.body;
@@ -109,17 +107,14 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response: Resp
   }
 
   // Verify that the user provides a valid YouTube video URL
-  const youtubeRegex = /^(https?\:\/\/)?((www\.)?youtube\.com\/watch\?v=|youtu\.?be\/).+$/;
+  const youtubeRegex = /^(https?:\/\/)?((www\.)?youtube\.com\/watch\?v=|youtu\.?be\/).+$/;
   if (!url || typeof url !== "string" || !youtubeRegex.test(url)) {
     return response.status(400).json({ message: "Invalid YouTube video URL." });
   }
 
   // Log the received body
-  
-
   try {
 
-    const createdAt = new Date();
     const result = await database.collection("runs").insertOne({ 
       gamePageID: objectID, 
       time: timeInt, 
@@ -135,4 +130,4 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response: Resp
   }
 });
 
-export default router;
+export default runsRouter;

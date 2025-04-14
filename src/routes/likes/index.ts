@@ -7,7 +7,7 @@
 }
 */
 import { Router, Request } from "express";
-import likesRouter from "./likes/[likeID].js";
+import likesRouter from "./[likeID]/index.js";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 
