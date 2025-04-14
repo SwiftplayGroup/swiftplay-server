@@ -13,7 +13,9 @@ export type EventName = (
   "gamePages.runs.create" |
   "groups.create" |
   "groups.delete" |
-  "groups.join"
+  "groups.join" |
+  "groups.members.add" |
+  "groups.members.join"
 )
 
 async function addToAuditLog(eventName: EventName, actorID: ObjectId, targetID: ObjectId, sessionID?: ObjectId) {
