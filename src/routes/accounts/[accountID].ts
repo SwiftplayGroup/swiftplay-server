@@ -26,13 +26,13 @@ router.get("/", async (request: Request<{ accountID: string }>, response) => {
       });
     }
 
-    const accountData: { [key: string]: unknown } = {};
+    const account: { [key: string]: unknown } = {};
 
     for (const key of Object.keys(accountDocument)) {
-      accountData[key === "_id" ? "accountID" : key] = accountDocument[key];
+      account[key === "_id" ? "accountID" : key] = accountDocument[key];
     }
 
-    response.json(accountData);
+    response.json(account);
   } catch (error: unknown) {
     console.error(error);
 
@@ -59,7 +59,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
         }
 
         // Make sure the user can change any permissions.
-        if (!response.locals.accountData.permissionOverrides?.accounts?.permissions?.edit) {
+        if (!response.locals.account.permissionOverrides?.accounts?.permissions?.edit) {
 
           return "You don't have permission to edit account permissions.";
 
@@ -91,12 +91,10 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
               break;
 
-            } else if (typeof(permissionValue) === "boolean") {
-              
-              console.log(permissionValue);
+            } else if (typeof(permissionValue) === "number") {
 
               // Verify that the person has permission to change a specific permission.
-              let permissionGroup = response.locals.accountData.permissionOverrides;
+              let permissionGroup = response.locals.account.permissionOverrides;
               for (const name of nameGroups) {
 
                 permissionGroup = permissionGroup[name];
@@ -107,10 +105,9 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
                 }
 
               }
-              
-              console.log(permissionGroup?.[permissionName]);
 
-              if (!permissionGroup?.[permissionName]) {
+              const ownPermissionLevel = permissionGroup?.[permissionName] ?? 0;
+              if (ownPermissionLevel < permissionValue) {
 
                 return `You don't have permission to change the ${nameGroups.join(".")}.${permissionName} permission.`;
 

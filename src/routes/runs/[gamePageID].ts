@@ -124,7 +124,7 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response: Resp
       gamePageID: objectID, 
       time: timeInt, 
       url, 
-      creatorID: response.locals.accountData._id 
+      creatorID: response.locals.account._id 
     });
     // Return a 201 status code on success, along with the run ID
     return response.status(201).json({ id: result.insertedId });

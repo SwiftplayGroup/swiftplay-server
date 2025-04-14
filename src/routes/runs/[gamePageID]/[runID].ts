@@ -77,8 +77,8 @@ router.patch("/", async (request: Request<{ gamePageID: string; runID: string }>
     }
 
     // Verify that the user has permission to delete the run.
-    const { accountData } = response.locals;
-    if (!runData.creatorID.equals(accountData._id) && !(request.body.shouldBypassPermissions && accountData.isModerator)) {
+    const { account } = response.locals;
+    if (!runData.creatorID.equals(account._id) && !(request.body.shouldBypassPermissions && account.isModerator)) {
 
       return response.status(403).json({
         message: "You don't have permission to update this run."
@@ -120,7 +120,7 @@ router.patch("/", async (request: Request<{ gamePageID: string; runID: string }>
 
       }
 
-      if ((key === "isVerified" || key === "creatorID") && !response.locals.accountData.isModerator) {
+      if ((key === "isVerified" || key === "creatorID") && !response.locals.account.isModerator) {
 
         return response.status(403).json({
           message: `You don't have permission to modify the ${key} key.`
@@ -195,8 +195,8 @@ router.delete("/", async (request: Request<{ gamePageID: string; runID: string }
     }
 
     // Verify that the user has permission to delete the run.
-    const { accountData } = response.locals;
-    if (!runData.creatorID.equals(accountData._id) && !(request.body.shouldBypassPermissions && accountData.isModerator)) {
+    const { account } = response.locals;
+    if (!runData.creatorID.equals(account._id) && !(request.body.shouldBypassPermissions && account.isModerator)) {
 
       return response.status(403).json({
         message: "You don't have permission to delete this run."

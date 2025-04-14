@@ -49,7 +49,7 @@ router.patch("/", async (request: Request<{ gamePageID: string }>, response) => 
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.accountData;
+  const { permissionOverrides, _id: actorID } = response.locals.account;
   if (permissionOverrides?.gamePages?.edit === false || (!defaultPermissions.gamePages.edit && !permissionOverrides?.gamePages?.edit)) {
 
     return response.status(403).json({
@@ -158,7 +158,7 @@ router.delete("/", async (request: Request<{ gamePageID: string }>, response) =>
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.accountData;
+  const { permissionOverrides, _id: actorID } = response.locals.account;
   if (permissionOverrides?.gamePages?.delete === false || (!defaultPermissions.gamePages.delete && !permissionOverrides?.gamePages?.delete)) {
 
     return response.status(403).json({

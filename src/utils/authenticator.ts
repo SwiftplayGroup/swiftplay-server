@@ -6,13 +6,13 @@ import { ObjectId } from "mongodb";
 export const defaultPermissions = {
   gamePages: {
     categories: {
-      create: false,
-      delete: false,
-      edit: false
+      create: 0,
+      delete: 0,
+      edit: 0
     },
-    create: true,
-    delete: false,
-    edit: false
+    create: 1,
+    delete: 0,
+    edit: 0
   }
 }
 
@@ -42,9 +42,9 @@ async function authenticator(request: Request, response: Response, next: NextFun
         if (await verify(session.tokenHash, token)) {
 
           // Save account data.
-          const accountData = await database.collection("accounts").findOne({_id: accountID});
+          const account = await database.collection("accounts").findOne({_id: accountID});
           response.locals.sessionID = session._id;
-          response.locals.accountData = accountData;
+          response.locals.account = account;
 
           next();
           return;

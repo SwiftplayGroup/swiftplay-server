@@ -56,10 +56,10 @@ router.get("/", async (request, response) => {
 
 // Creates a game page.
 router.post("/", authenticator);
-router.post("/", async (request, response: Response<any, {accountData: Account; sessionID: ObjectId}>) => {
+router.post("/", async (request, response: Response<any, {account: Account; sessionID: ObjectId}>) => {
 
   // Verify permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.accountData;
+  const { permissionOverrides, _id: actorID } = response.locals.account;
   if (permissionOverrides?.gamePages?.create === false || (!defaultPermissions.gamePages.create && !permissionOverrides?.gamePages?.create)) {
 
     return response.status(403).json({

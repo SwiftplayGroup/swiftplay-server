@@ -8,15 +8,15 @@ router.use("/sessions", sessionsRouter);
 router.get("/", authenticator);
 router.get("/", async (request, response) => {
 
-  const accountData: {[key: string]: unknown} = {};
+  const account: {[key: string]: unknown} = {};
 
-  for (const key of Object.keys(response.locals.accountData)) {
+  for (const key of Object.keys(response.locals.account)) {
 
-    accountData[key === "_id" ? "accountID" : key] = response.locals.accountData[key];
+    account[key === "_id" ? "accountID" : key] = response.locals.account[key];
 
   }
 
-  response.json(accountData);
+  response.json(account);
 
 });
 
