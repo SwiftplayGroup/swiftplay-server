@@ -1,25 +1,20 @@
 import addToAuditLog from "#utils/addToAuditLog.js";
-import authenticator, { defaultPermissions } from "#utils/authenticator.js";
+import authenticator from "#utils/authenticator.js";
 import database from "#utils/database-generator.js";
-import { Request, Router } from "express";
+import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
+import { AuthenticatedResponse } from "#classes/User.js";
 
 const router = Router({ mergeParams: true });
 
 // Edit a run category.
 router.patch("/", authenticator);
-router.patch("/", async (request: Request<{ categoryID: string }>, response) => {
+router.patch("/", async (request: Request<{ categoryID: string }>, response: AuthenticatedResponse) => {
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.categories?.edit === 0 || (!defaultPermissions.gamePages.categories.edit && !permissionOverrides?.gamePages?.categories?.edit)) {
-
-    return response.status(403).json({
-      message: "You don't have permission to do that."
-    });
-
-  }
+  const { user } = response.locals;
+  user.verifyPermission("gamePages.categories.edit", 1);
 
   // Verify properties.
   for (const key of Object.keys(request.body)) {
@@ -106,7 +101,7 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
       }
     );
 
-    await addToAuditLog("gamePages.categories.edit", actorID, category._id, response.locals.sessionID);
+    await addToAuditLog("gamePages.categories.edit", user._id, category._id, user.getSessionID());
 
   } catch (error: unknown) {
 
@@ -126,18 +121,12 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
 
 // Delete a run category.
 router.delete("/", authenticator);
-router.delete("/", async (request: Request<{ categoryID: string }>, response) => {
+router.delete("/", async (request: Request<{ categoryID: string }>, response: AuthenticatedResponse) => {
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.categories?.delete === 0 || (!defaultPermissions.gamePages.categories.delete && !permissionOverrides?.gamePages?.categories?.delete)) {
-
-    return response.status(403).json({
-      message: "You don't have permission to do that."
-    });
-
-  }
+  const { user } = response.locals;
+  user.verifyPermission("gamePages.categories.delete", 1);
 
   let category;
   const runCategoriesCollection = database.collection("runCategories");
@@ -197,7 +186,7 @@ router.delete("/", async (request: Request<{ categoryID: string }>, response) =>
 
     console.log(`Successfully deleted a run category: ${category._id}`);
 
-    await addToAuditLog("gamePages.categories.delete", actorID, category._id, response.locals.sessionID);
+    await addToAuditLog("gamePages.categories.delete", user._id, category._id, user.getSessionID());
 
     return response.status(204).json({
       success: true

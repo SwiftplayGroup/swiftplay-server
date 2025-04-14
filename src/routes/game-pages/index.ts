@@ -1,9 +1,9 @@
-import { Router, Response } from "express";
+import { Router } from "express";
 import gamePageIDRouter from "./[gamePageID]/index.js";
 import database from "#utils/database-generator.js";
-import authenticator, { Account, defaultPermissions } from "#utils/authenticator.js";
-import { ObjectId } from "mongodb";
+import authenticator from "#utils/authenticator.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
+import { AuthenticatedResponse } from "#classes/User.js";
 
 const router = Router();
 router.use("/:gamePageID", gamePageIDRouter);
@@ -56,17 +56,11 @@ router.get("/", async (request, response) => {
 
 // Creates a game page.
 router.post("/", authenticator);
-router.post("/", async (request, response: Response<unknown, {account: Account; sessionID: ObjectId}>) => {
+router.post("/", async (request, response: AuthenticatedResponse) => {
 
   // Verify permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.create === 0 || (!defaultPermissions.gamePages.create && !permissionOverrides?.gamePages?.create)) {
-
-    return response.status(403).json({
-      message: "You don't have permission to do that."
-    });
-
-  }
+  const { user } = response.locals;
+  user.verifyPermission("gamePages.create", 1);
 
   // Verify that a name was provided.
   const { name } = request.body;
@@ -106,7 +100,7 @@ router.post("/", async (request, response: Response<unknown, {account: Account; 
     console.log(`Successfully created a game page: ${gamePageID}`);
 
     // Add the event to the audit log.
-    await addToAuditLog("gamePages.create", actorID, gamePageID, response.locals.sessionID);
+    await addToAuditLog("gamePages.create", user._id, gamePageID, user.getSessionID());
 
     return response.status(201).json({
       id: gamePageID

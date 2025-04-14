@@ -1,9 +1,10 @@
-import authenticator, { defaultPermissions } from "#utils/authenticator.js";
+import authenticator from "#utils/authenticator.js";
 import database from "#utils/database-generator.js";
 import { Request, Router } from "express";
 import { ObjectId } from "mongodb";
 import categoryIDRouter from "./[categoryID]/index.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
+import { AuthenticatedResponse } from "#classes/User.js";
 
 const router = Router({ mergeParams: true });
 
@@ -45,18 +46,12 @@ router.get("/", async (request: Request<{ gamePageID: string }>, response) => {
 
 // Create a run category.
 router.post("/", authenticator);
-router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
+router.post("/", async (request: Request<{ gamePageID: string }>, response: AuthenticatedResponse) => {
 
   // Verify permissions.
   // TODO: Check game page permissions.
-  const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.categories?.create === 0 || (!defaultPermissions.gamePages.categories.create && !permissionOverrides?.gamePages?.categories?.create)) {
-
-    return response.status(403).json({
-      message: "You don't have permission to do that."
-    });
-
-  }
+  const { user } = response.locals;
+  user.verifyPermission("gamePages.categories.create", 1);
 
   // Restrict the category name to a reasonable length.
   const categoryName = request.body.name;
@@ -88,7 +83,7 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
     console.log(`Successfully created run category: ${categoryID}`);
 
     // Add the event to the audit log.
-    await addToAuditLog("gamePages.categories.create", actorID, categoryID, response.locals.sessionID);
+    await addToAuditLog("gamePages.categories.create", user._id, categoryID, user.getSessionID());
 
     // Return the info to the client.
     return response.status(201).json({categoryID});
