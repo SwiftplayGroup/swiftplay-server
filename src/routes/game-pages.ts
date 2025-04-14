@@ -56,11 +56,11 @@ router.get("/", async (request, response) => {
 
 // Creates a game page.
 router.post("/", authenticator);
-router.post("/", async (request, response: Response<any, {accountData: Account; sessionID: ObjectId}>) => {
+router.post("/", async (request, response: Response<any, {account: Account; sessionID: ObjectId}>) => {
 
   // Verify permissions.
-  const { permissionOverwrites, _id: actorID } = response.locals.accountData;
-  if (permissionOverwrites?.gamePages?.create === false || (!defaultPermissions.gamePages.create && !permissionOverwrites?.gamePages?.create)) {
+  const { permissionOverrides, _id: actorID } = response.locals.account;
+  if (permissionOverrides?.gamePages?.create === false || (!defaultPermissions.gamePages.create && !permissionOverrides?.gamePages?.create)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."
