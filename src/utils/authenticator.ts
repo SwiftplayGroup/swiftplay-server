@@ -42,7 +42,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
         if (await verify(session.tokenHash, token)) {
 
           // Save account data.
-          const account = await database.collection("accounts").findOne({_id: accountID});
+          const account = await database.collection("users").findOne({_id: accountID});
           response.locals.sessionID = session._id;
           response.locals.account = account;
 
