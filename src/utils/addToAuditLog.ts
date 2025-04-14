@@ -15,7 +15,9 @@ export type EventName = (
   "groups.delete" |
   "groups.join" |
   "groups.members.add" |
-  "groups.members.join"
+  "groups.members.join" |
+  "groups.members.remove" |
+  "groups.members.leave"
 )
 
 async function addToAuditLog(eventName: EventName, actorID: ObjectId, targetID: ObjectId, sessionID?: ObjectId) {

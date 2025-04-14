@@ -1,10 +1,11 @@
+import { ObjectId } from "mongodb";
 import { NotFoundError } from "./NotFoundError.js";
 
 export class GroupMemberNotFoundError extends NotFoundError {
 
-  constructor() {
+  constructor(memberID: ObjectId | string) {
 
-    super("Group member not found.");
+    super(`Group member ${memberID.toString("hex")} not found.`);
 
   }
 

@@ -26,7 +26,7 @@ router.delete("/", async (request: Request<{groupID: string}>, response: Authent
     const { user } = response.locals;
     try {
 
-      const member = await GroupMember.getFromID(new ObjectId(request.params.groupID), user._id);
+      const member = await GroupMember.getFromUserID(new ObjectId(request.params.groupID), user._id);
       if (!member.isAdmin) {
 
         throw new NoPermissionError();
