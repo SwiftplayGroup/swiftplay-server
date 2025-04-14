@@ -67,4 +67,12 @@ export default class Group {
 
   }
 
+  async getMembers() {
+
+    return await database.collection("groupMembers").find({
+      groupID: this._id
+    }).toArray();
+
+  }
+
 }
