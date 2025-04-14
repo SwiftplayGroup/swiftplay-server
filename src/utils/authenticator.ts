@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import database from "./database-generator.js";
 import { verify } from "argon2";
 import { ObjectId } from "mongodb";
-import User from "src/classes/User.js";
+import User from "#classes/User.js";
 
 async function authenticator(request: Request, response: Response, next: NextFunction) {
 

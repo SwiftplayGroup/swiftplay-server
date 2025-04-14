@@ -10,21 +10,43 @@ import { Request, Router } from "express";
 import addToAuditLog from "#utils/addToAuditLog.js";
 import authenticator from "#utils/authenticator.js";
 import { ObjectId } from "mongodb";
-import getAuthenticatedMember from "#utils/getAuthenticatedMember.js";
 import { AuthenticatedResponse } from "#classes/User.js";
+import { GroupMemberNotFoundError } from "#classes/errors/GroupMemberNotFoundError.js";
+import GroupMember from "#classes/GroupMember.js";
+import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
 
-const router = Router();
+const router = Router({mergeParams: true});
 
 router.delete("/", authenticator);
-router.delete("/", getAuthenticatedMember);
 router.delete("/", async (request: Request<{groupID: string}>, response: AuthenticatedResponse) => {
 
-  // Verify permissions.
-  const { user } = response.locals;
-  user.verifyPermission("groups.delete", 1);
-
-  // Make sure there isn't a similar group name.
   try {
+
+    // Verify permissions.
+    const { user } = response.locals;
+    try {
+
+      const member = await GroupMember.getFromID(new ObjectId(request.params.groupID), user._id);
+      if (!member.isAdmin) {
+
+        throw new NoPermissionError();
+
+      }
+
+    } catch (error) {
+
+      if (error instanceof NoPermissionError || error instanceof GroupMemberNotFoundError) {
+
+        // Check if the user is a global moderator.
+        user.verifyPermission("groups.delete", 1);
+
+      } else {
+
+        throw error;
+
+      }
+
+    }
 
     // Delete group data from database
     const groupID = new ObjectId(request.params.groupID);
@@ -40,11 +62,22 @@ router.delete("/", async (request: Request<{groupID: string}>, response: Authent
 
   } catch (error: unknown) {
 
-    console.error(error);
 
-    return response.status(500).json({
-      message: "Something bad happened on our end. Try again later."
-    });
+    if (error instanceof NoPermissionError) {
+
+      return response.status(error.statusCode).json({
+        message: error.message
+      });
+
+    } else {
+      
+      console.error(error);
+
+      return response.status(500).json({
+        message: "Something bad happened on our end. Try again later."
+      });
+
+    }
     
   }
 
