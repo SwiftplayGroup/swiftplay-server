@@ -1,3 +1,4 @@
+import addToAuditLog from "#utils/addToAuditLog.js";
 import authenticator from "#utils/authenticator.js";
 import database from "#utils/database-generator.js";
 import { Request, Router } from "express";
@@ -45,7 +46,10 @@ router.get("/", async (request: Request<{ accountID: string }>, response) => {
 router.patch("/", authenticator);
 router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
+  const { _id: actorID } = response.locals.account;
+
   // Verify properties.
+  const unsetPermissions: Record<string, any> = {};
   for (const key of Object.keys(request.body)) {
 
     const keyChecks: {[key: string]: (value: unknown) => boolean | string} = {
@@ -66,7 +70,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
           
           let shouldGoUp = true;
           let currentGroup: {[key: string]: any} = groups[groups.length - 1];
-          
+
           for (const permissionName of Object.keys(currentGroup)) {
 
             const permissionValue = currentGroup[permissionName];
@@ -74,7 +78,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
               continue;
 
-            } else if (typeof(permissionValue) === "object") {
+            } else if (permissionValue instanceof Object && !(permissionValue instanceof Array)) {
 
               closestGroup[permissionName] = {};
               closestGroup = closestGroup[permissionName];
@@ -106,9 +110,29 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
               }
 
-            } else {
+              if (permissionValue < 0 || permissionValue > 2) {
 
-              return `${nameGroups.join(".")}.${permissionName} must be an object or a number.`;
+                return `${nameGroups.join(".")}.${permissionName} must be 0, 1, or 2.`
+
+              }
+
+            } else if (permissionValue === null) { 
+              
+              delete currentGroup[permissionName];
+
+              let permissionGroup = unsetPermissions;
+              for (const name of nameGroups) {
+
+                permissionGroup[name] = permissionGroup[name] ?? {};
+                permissionGroup = permissionGroup[name];
+
+              }
+
+              permissionGroup[permissionName] = 1;
+
+            } else {
+ 
+              return `${nameGroups.join(".")}.${permissionName} must be an object, a number, or null.`;
 
             }
 
@@ -131,8 +155,6 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
           }
 
         }
-
-        console.log(indexedGroup);
 
         return true;
 
@@ -158,6 +180,68 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
     }
 
   }
+
+  // Make sure the account exists.
+  let account;
+  let accountsCollection = database.collection("accounts");
+
+  try {
+    
+    const gamePageID = new ObjectId(request.params.accountID);
+    account = await accountsCollection.findOne({
+      _id: new ObjectId(gamePageID)
+    });
+
+    if (!account) {
+
+      return response.status(404).json({
+        message: "Account not found.",
+      });
+
+    }
+
+  } catch (error: unknown) {
+
+    if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
+
+      return response.status(404).json({
+        message: "Account not found.",
+      });
+
+    } else {
+
+      console.log(error);
+
+      return response.status(500).json({
+        message: "Something bad happened on our side. Try again later.",
+      });
+
+    }
+    
+  }
+
+  try {
+
+    await accountsCollection.updateOne(
+      {_id: account._id},
+      {
+        $set: request.body,
+        $unset: unsetPermissions
+      },
+    );
+
+    await addToAuditLog("accounts.edit", actorID, account._id, response.locals.sessionID)
+
+  } catch (error: unknown) {
+
+    return response.status(500).json({
+      message: "Something bad happened on our side. Try again later.",
+    });
+
+  }
+
+  // Update properties.
+
 
   return response.status(200).json({
     success: true
