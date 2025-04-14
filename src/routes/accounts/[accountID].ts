@@ -58,13 +58,6 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
         }
 
-        // Make sure the user can change any permissions.
-        if (!response.locals.account.permissionOverrides?.accounts?.permissions?.edit) {
-
-          return "You don't have permission to edit account permissions.";
-
-        }
-
         const groups = [value];
         const nameGroups = [];
         const indexedGroup: {[key: string]: any} = {};
@@ -107,11 +100,15 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
               }
 
               const ownPermissionLevel = permissionGroup?.[permissionName] ?? 0;
-              if (ownPermissionLevel < permissionValue) {
+              if (ownPermissionLevel < 2) {
 
                 return `You don't have permission to change the ${nameGroups.join(".")}.${permissionName} permission.`;
 
               }
+
+            } else {
+
+              return `${nameGroups.join(".")}.${permissionName} must be an object or a number.`;
 
             }
 
