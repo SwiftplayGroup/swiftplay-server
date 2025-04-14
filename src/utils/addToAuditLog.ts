@@ -2,7 +2,19 @@
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 
-async function addToAuditLog(eventName: "accounts.edit" | "gamePages.categories.create" | "gamePages.categories.delete" | "gamePages.categories.edit" | "gamePages.create" | "gamePages.delete" | "gamePages.edit", actorID: ObjectId, targetID: ObjectId, sessionID: ObjectId) {
+export type EventName = (
+  "accounts.edit" | 
+  "gamePages.categories.create" | 
+  "gamePages.categories.delete" | 
+  "gamePages.categories.edit" | 
+  "gamePages.create" | 
+  "gamePages.delete" | 
+  "gamePages.edit" |
+  "groups.create" |
+  "groups.join"
+)
+
+async function addToAuditLog(eventName: EventName, actorID: ObjectId, targetID: ObjectId, sessionID: ObjectId) {
 
   const eventsCollection = database.collection("events");
   const eventEntry = await eventsCollection.findOne({name: eventName});

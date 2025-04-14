@@ -13,7 +13,7 @@ router.patch("/", async (request: Request<{ categoryID: string }>, response) => 
   // Verify permissions.
   // TODO: Check game page permissions.
   const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.categories?.edit === false || (!defaultPermissions.gamePages.categories.edit && !permissionOverrides?.gamePages?.categories?.edit)) {
+  if (permissionOverrides?.gamePages?.categories?.edit === 0 || (!defaultPermissions.gamePages.categories.edit && !permissionOverrides?.gamePages?.categories?.edit)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."
@@ -129,7 +129,7 @@ router.delete("/", async (request: Request<{ categoryID: string }>, response) =>
   // Verify permissions.
   // TODO: Check game page permissions.
   const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.categories?.delete === false || (!defaultPermissions.gamePages.categories.delete && !permissionOverrides?.gamePages?.categories?.delete)) {
+  if (permissionOverrides?.gamePages?.categories?.delete === 0 || (!defaultPermissions.gamePages.categories.delete && !permissionOverrides?.gamePages?.categories?.delete)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."

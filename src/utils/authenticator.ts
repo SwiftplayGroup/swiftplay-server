@@ -13,6 +13,9 @@ export const defaultPermissions = {
     create: 1,
     delete: 0,
     edit: 0
+  },
+  groups: {
+    create: 1
   }
 }
 
@@ -20,7 +23,17 @@ export type Account = {
   _id: ObjectId,
   permissionOverrides: {
     gamePages: {
-      create?: boolean;
+      categories: {
+        create: number,
+        delete: number,
+        edit: number
+      },
+      create: number,
+      delete: number,
+      edit: number
+    },
+    groups: {
+      create: number
     }
   }
 }

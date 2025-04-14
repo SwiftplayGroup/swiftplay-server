@@ -50,7 +50,7 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
   // Verify permissions.
   // TODO: Check game page permissions.
   const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.categories?.create === false || (!defaultPermissions.gamePages.categories.create && !permissionOverrides?.gamePages?.categories?.create)) {
+  if (permissionOverrides?.gamePages?.categories?.create === 0 || (!defaultPermissions.gamePages.categories.create && !permissionOverrides?.gamePages?.categories?.create)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."
