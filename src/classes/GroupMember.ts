@@ -25,21 +25,46 @@ export default class GroupMember {
 
   }
 
-  static async getFromID(groupID: ObjectId, userID: ObjectId) {
+  static async getFromUserID(groupID: ObjectId, userID: ObjectId | string) {
 
-    const data = await database.collection<GroupMemberProperties>("groupMembers").findOne({
-      groupID,
-      userID
-    });
+    try {
 
-    if (!data) {
+      const data = await database.collection<GroupMemberProperties>("groupMembers").findOne({
+        groupID,
+        userID: new ObjectId(userID)
+      });
 
-      throw new GroupMemberNotFoundError();
+      if (!data) {
+
+        throw new GroupMemberNotFoundError(userID);
+
+      }
+
+      return new GroupMember(data);
+
+    } catch (error) {
+
+      if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
+            
+        throw new GroupMemberNotFoundError(userID);
+  
+      } else {
+
+        throw error;
+
+      }
 
     }
 
-    return new GroupMember(data);
+  }
 
+  async remove() {
+
+    await database.collection<GroupMemberProperties>("groupMembers").deleteOne({
+      groupID: this.groupID,
+      userID: this.userID
+    });
+    
   }
 
 }

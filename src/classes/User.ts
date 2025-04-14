@@ -21,6 +21,8 @@ export type PermissionOverride = {
     members?: {
       add?: number;
       join?: number;
+      leave?: number;
+      remove?: number;
     }
   }
 }
@@ -44,7 +46,9 @@ type Permission = (
   "groups.create" |
   "groups.delete" |
   "groups.members.add" |
-  "groups.members.join"
+  "groups.members.join" |
+  "groups.members.leave" |
+  "groups.members.remove"
 )
 
 export default class User {
@@ -69,7 +73,9 @@ export default class User {
       delete: 0,
       members: {
         add: 0,
-        join: 1
+        join: 1,
+        leave: 1,
+        remove: 0
       }
     }
   };
