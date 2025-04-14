@@ -58,7 +58,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
         // Verify input.
         if (!value || typeof(value) !== "object") {
 
-          return "Permission overrides must be an object."
+          return "Permission overrides must be an object.";
 
         }
 
@@ -69,7 +69,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
         while (groups.length > 0) {
           
           let shouldGoUp = true;
-          let currentGroup: {[key: string]: any} = groups[groups.length - 1];
+          const currentGroup: {[key: string]: any} = groups[groups.length - 1];
 
           for (const permissionName of Object.keys(currentGroup)) {
 
@@ -112,7 +112,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
               if (permissionValue < 0 || permissionValue > 2) {
 
-                return `${nameGroups.join(".")}.${permissionName} must be 0, 1, or 2.`
+                return `${nameGroups.join(".")}.${permissionName} must be 0, 1, or 2.`;
 
               }
 
@@ -146,7 +146,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
             let newClosestIndexedGroup = indexedGroup;
             for (const name of nameGroups) {
 
-              newClosestIndexedGroup = newClosestIndexedGroup[name]
+              newClosestIndexedGroup = newClosestIndexedGroup[name];
 
             }
 
@@ -183,7 +183,7 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
   // Make sure the account exists.
   let user;
-  let usersCollection = database.collection("users");
+  const usersCollection = database.collection("users");
 
   try {
     
@@ -230,9 +230,11 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
       },
     );
 
-    await addToAuditLog("accounts.edit", actorID, user._id, response.locals.sessionID)
+    await addToAuditLog("accounts.edit", actorID, user._id, response.locals.sessionID);
 
   } catch (error: unknown) {
+
+    console.warn(error);
 
     return response.status(500).json({
       message: "Something bad happened on our side. Try again later.",

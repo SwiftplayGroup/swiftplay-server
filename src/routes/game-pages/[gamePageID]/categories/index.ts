@@ -2,7 +2,7 @@ import authenticator, { defaultPermissions } from "#utils/authenticator.js";
 import database from "#utils/database-generator.js";
 import { Request, Router } from "express";
 import { ObjectId } from "mongodb";
-import categoryIDRouter from "./categories/[categoryID].js";
+import categoryIDRouter from "./[categoryID]/index.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
 
 const router = Router({ mergeParams: true });
@@ -73,7 +73,7 @@ router.post("/", async (request: Request<{ gamePageID: string }>, response) => {
     // Verify that the name doesn't already exist.
     const similarNameFilter = {
       name: new RegExp(`^${categoryName.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
-    }
+    };
 
     if (await database.collection("runCategories").countDocuments(similarNameFilter) > 0) {
 

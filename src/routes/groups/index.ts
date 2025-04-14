@@ -24,7 +24,7 @@ router.post("/", async (request, response) => {
 
     return response.status(400).json({
       message: "Group name must be a string that ranges from 1 to 64 characters."
-    })
+    });
 
   }
 
@@ -34,7 +34,7 @@ router.post("/", async (request, response) => {
     // Verify that the name doesn't already exist.
     const similarNameFilter = {
       name: new RegExp(`^${name.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
-    }
+    };
 
     if (await database.collection("groups").countDocuments(similarNameFilter) > 0) {
 

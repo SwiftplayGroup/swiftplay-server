@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import gamePageIDRouter from "./game-pages/[gamePageID].js";
+import gamePageIDRouter from "./[gamePageID]/index.js";
 import database from "#utils/database-generator.js";
 import authenticator, { Account, defaultPermissions } from "#utils/authenticator.js";
 import { ObjectId } from "mongodb";
@@ -56,7 +56,7 @@ router.get("/", async (request, response) => {
 
 // Creates a game page.
 router.post("/", authenticator);
-router.post("/", async (request, response: Response<any, {account: Account; sessionID: ObjectId}>) => {
+router.post("/", async (request, response: Response<unknown, {account: Account; sessionID: ObjectId}>) => {
 
   // Verify permissions.
   const { permissionOverrides, _id: actorID } = response.locals.account;
@@ -91,7 +91,7 @@ router.post("/", async (request, response: Response<any, {account: Account; sess
     // Make sure the name doesn't conflict with any other name.
     const similarNameFilter = {
       name: new RegExp(`^${name.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
-    }
+    };
 
     if (await database.collection("gamePages").countDocuments(similarNameFilter) > 0) {
 

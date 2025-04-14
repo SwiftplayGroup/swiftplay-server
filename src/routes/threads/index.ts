@@ -11,7 +11,7 @@ isDeleted false
 */
 
 import { Router } from "express";
-import threadsRouter from "./threads/[threadID].js";
+import threadsRouter from "./[threadID]/index.js";
 import database from "#utils/database-generator.js";
 
 const router = Router();

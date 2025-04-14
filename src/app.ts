@@ -3,7 +3,7 @@ import accountRouter from "./routes/account.js";
 import accountsRouter from "./routes/accounts.js";
 import runsRouter from "./routes/runs.js";
 import gamePagesRouter from "./routes/game-pages.js";
-import groupsRouter from "./routes/groups.js";
+import groupsRouter from "./routes/groups/index.js";
 import forumsRouter from "./routes/forums.js";
 import threadsRouter from "./routes/threads.js";
 import likesRouter from "./routes/likes.js";

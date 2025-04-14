@@ -2,8 +2,8 @@ import database from "#utils/database-generator.js";
 import { Router } from "express";
 import { hash as hashString, verify as verifyPassword } from "argon2";
 import { randomBytes } from "crypto";
-import sessionIDRouter from "./sessions/[sessionID].js";
-import byTokenRouter from "./sessions/by-token.js";
+import sessionIDRouter from "./[sessionID]/index.js";
+import byTokenRouter from "./by-token.js";
 
 const router = Router({ mergeParams: true });
 router.use("/:sessionID", sessionIDRouter);
