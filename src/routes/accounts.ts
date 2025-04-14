@@ -31,8 +31,8 @@ router.post("/", async (request, response) => {
   }
 
   // Ensure that there isn't another user with the same username.
-  const accountsCollection = database.collection("accounts");
-  const conflictCount = await accountsCollection.countDocuments({
+  const usersCollection = database.collection("users");
+  const conflictCount = await usersCollection.countDocuments({
     username: new RegExp(`^${username}$`, "i"),
   });
 
@@ -48,7 +48,7 @@ router.post("/", async (request, response) => {
   // Try to save the user's account data into a new entry on the database.
   let accountID;
   try {
-    const result = await accountsCollection.insertOne({
+    const result = await usersCollection.insertOne({
       emailAddress,
       username,
       password: hashedPassword,

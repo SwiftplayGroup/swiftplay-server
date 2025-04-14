@@ -18,10 +18,10 @@ router.get("/", async (request: Request<{ accountID: string }>, response) => {
   }
 
   try {
-    const accountDocument = await database
-      .collection("accounts")
+    const user = await database
+      .collection("users")
       .findOne({ _id: accountID });
-    if (!accountDocument) {
+    if (!user) {
       return response.status(404).json({
         message: "Account not found.",
       });
@@ -29,8 +29,8 @@ router.get("/", async (request: Request<{ accountID: string }>, response) => {
 
     const account: { [key: string]: unknown } = {};
 
-    for (const key of Object.keys(accountDocument)) {
-      account[key === "_id" ? "accountID" : key] = accountDocument[key];
+    for (const key of Object.keys(user)) {
+      account[key === "_id" ? "accountID" : key] = user[key];
     }
 
     response.json(account);
@@ -182,17 +182,17 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
   }
 
   // Make sure the account exists.
-  let account;
-  let accountsCollection = database.collection("accounts");
+  let user;
+  let usersCollection = database.collection("users");
 
   try {
     
     const gamePageID = new ObjectId(request.params.accountID);
-    account = await accountsCollection.findOne({
+    user = await usersCollection.findOne({
       _id: new ObjectId(gamePageID)
     });
 
-    if (!account) {
+    if (!user) {
 
       return response.status(404).json({
         message: "Account not found.",
@@ -222,15 +222,15 @@ router.patch("/", async (request: Request<{ accountID: string }>, response) => {
 
   try {
 
-    await accountsCollection.updateOne(
-      {_id: account._id},
+    await usersCollection.updateOne(
+      {_id: user._id},
       {
         $set: request.body,
         $unset: unsetPermissions
       },
     );
 
-    await addToAuditLog("accounts.edit", actorID, account._id, response.locals.sessionID)
+    await addToAuditLog("accounts.edit", actorID, user._id, response.locals.sessionID)
 
   } catch (error: unknown) {
 

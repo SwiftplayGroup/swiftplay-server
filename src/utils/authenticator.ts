@@ -13,6 +13,9 @@ export const defaultPermissions = {
     create: 1,
     delete: 0,
     edit: 0
+  },
+  groups: {
+    create: 1
   }
 }
 
@@ -20,7 +23,17 @@ export type Account = {
   _id: ObjectId,
   permissionOverrides: {
     gamePages: {
-      create?: boolean;
+      categories: {
+        create: number,
+        delete: number,
+        edit: number
+      },
+      create: number,
+      delete: number,
+      edit: number
+    },
+    groups: {
+      create: number
     }
   }
 }
@@ -42,7 +55,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
         if (await verify(session.tokenHash, token)) {
 
           // Save account data.
-          const account = await database.collection("accounts").findOne({_id: accountID});
+          const account = await database.collection("users").findOne({_id: accountID});
           response.locals.sessionID = session._id;
           response.locals.account = account;
 

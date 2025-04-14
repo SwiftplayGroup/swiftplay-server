@@ -60,7 +60,7 @@ router.post("/", async (request, response: Response<any, {account: Account; sess
 
   // Verify permissions.
   const { permissionOverrides, _id: actorID } = response.locals.account;
-  if (permissionOverrides?.gamePages?.create === false || (!defaultPermissions.gamePages.create && !permissionOverrides?.gamePages?.create)) {
+  if (permissionOverrides?.gamePages?.create === 0 || (!defaultPermissions.gamePages.create && !permissionOverrides?.gamePages?.create)) {
 
     return response.status(403).json({
       message: "You don't have permission to do that."

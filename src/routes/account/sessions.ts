@@ -26,11 +26,11 @@ router.post("/", async (request, response) => {
     });
   }
 
-  const accountsCollection = database.collection("accounts");
+  const usersCollection = database.collection("users");
   const userFilter = {
     username: new RegExp(`^${username}$`, "i"),
   };
-  const userData = await accountsCollection.findOne(userFilter);
+  const userData = await usersCollection.findOne(userFilter);
 
   if (!(userData && (await verifyPassword(userData.password, password)))) {
     return response.status(401).json({
