@@ -10,7 +10,7 @@ import database from "#utils/database-generator.js";
 
 const router = Router();
 
-router.use("/forums", forumsRouter);
+router.use("/:forumID", forumsRouter);
 
 router.get("/", async (req, res) => {
   try {

@@ -7,6 +7,7 @@ import groupsRouter from "./routes/groups/index.js";
 import forumsRouter from "./routes/forums/index.js";
 import threadsRouter from "./routes/threads/index.js";
 import likesRouter from "./routes/likes/index.js";
+import postsRouter from "./routes/posts/index.js";
 import cors from "cors";
 
 const app = express();
@@ -16,6 +17,7 @@ app.disable("x-powered-by");
 app.use("/runs", runsRouter);
 app.use("/account", accountRouter);
 app.use("/accounts", accountsRouter);
+app.use("/posts", postsRouter);
 app.use("/game-pages", gamePagesRouter);
 app.use("/groups", groupsRouter);
 app.use("/forums", forumsRouter);
