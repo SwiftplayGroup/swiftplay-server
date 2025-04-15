@@ -1,38 +1,12 @@
-/*
-{"_id":{"$oid":"67eedf895f7606295aefff90"},
-"name":"Valorant",
-"description":"community for the worst shooter ever"}
-*/
-
 import { Router } from "express";
-import forumsRouter from "./[forumID]/index.js";
-import database from "#utils/database-generator.js";
+import forumRouter from "./[forumID]/index.js";
+import getForumRouter from "./get.js";
+import createForumRouter from "./post.js";
 
 const router = Router();
 
-router.use("/:forumID", forumsRouter);
-
-router.get("/", async (req, res) => {
-  try {
-    const docs = await database.collection("forums").find().toArray();
-    res.json(docs);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
-
-router.post("/", async (req, res) => {
-  try {
-    const { title, description } = req.body;
-    const forum = await database
-      .collection("forums")
-      .insertOne({ title, description });
-    res.status(201).json(forum);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
+router.use("/", getForumRouter);
+router.use("/", createForumRouter);
+router.use("/:forumID", forumRouter);
 
 export default router;
