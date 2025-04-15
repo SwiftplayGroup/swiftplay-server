@@ -1,18 +1,14 @@
-import { Router, Request } from "express";
-import database from "#utils/database-generator.js";
-import { ObjectId } from "mongodb";
+import { Router } from "express";
+import getPostRouter from "./get.js";
+import repliesRouter from "./replies/index.js";
+import likesRouter from "./likes/index.js";
 
-const router = Router({
+const postRouter = Router({
   mergeParams: true,
 });
 
-router.get("/", async (req: Request<{ postID: string }>, res) => {
-  const postID = req.params.postID;
-  const post = await database
-    .collection("posts")
-    .findOne({ _id: new ObjectId(postID) });
-  if (!post) return res.status(404).send("Post not found");
-  res.send(post);
-});
+postRouter.use("/", getPostRouter);
+postRouter.use("/likes", likesRouter);
+postRouter.use("/replies", repliesRouter);
 
-export default router;
+export default postRouter;
