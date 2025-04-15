@@ -1,5 +1,12 @@
-//make a like
-router.post("/", async (req, res) => {
+import { Router } from "express";
+import database from "#utils/database-generator.js";
+import { ObjectId } from "mongodb";
+
+const createLikeRouter = Router({
+  mergeParams: true,
+});
+
+createLikeRouter.post("/", async (req, res) => {
   try {
     const { userId, threadId } = req.body;
     const forum = await database.collection("likes").insertOne({
@@ -14,3 +21,5 @@ router.post("/", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+export default createLikeRouter;

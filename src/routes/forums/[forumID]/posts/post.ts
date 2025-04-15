@@ -1,4 +1,11 @@
-router.post("/", async (req, res) => {
+import { Router } from "express";
+import database from "#utils/database-generator.js";
+
+const createPostRouter = Router({
+  mergeParams: true,
+});
+
+createPostRouter.post("/", async (req, res) => {
   try {
     const { title, description } = req.body;
     const forum = await database
@@ -10,3 +17,5 @@ router.post("/", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+export default createPostRouter;
