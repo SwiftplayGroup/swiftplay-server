@@ -1,8 +1,8 @@
 import { Router } from "express";
-import runIDRouter from "./[runID]/index.js";
+import runRouter from "./[runID]/index.js";
 
 const router = Router();
 
-router.use("/:runID", runIDRouter);
+router.use("/:runID", runRouter);
 
 export default router;
