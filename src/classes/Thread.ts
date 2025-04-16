@@ -5,28 +5,28 @@ import { PostNotFoundError } from "./errors/PostNotFoundError.js";
 import Like, { LikeProperties } from "./Like.js";
 import { UserNotFoundError } from "./errors/UserNotFoundError.js";
 
-export type PostProperties = {
+export type ThreadProperties = {
   _id: ObjectId;
-  content: string;
-  parentPostID?: ObjectId;
+  title?: string;
   authorID: ObjectId;
-  threadID: ObjectId;
+  forumID: ObjectId;
 }
 
 export default class Post {
 
   readonly _id: ObjectId;
   authorID: ObjectId;
-  content: string;
-  parentPostID?: ObjectId;
-  static collection = database.collection<PostProperties>("posts");
+  title?: string;
+  threadID?: ObjectId;
+  forumID: ObjectId;
+  static collection = database.collection<ThreadProperties>("threads");
 
-  constructor(properties: PostProperties) {
+  constructor(properties: ThreadProperties) {
 
     this._id = properties._id;
-    this.content = properties.content;
+    this.title = properties.title;
     this.authorID = properties.authorID;
-    this.parentPostID = properties.parentPostID;
+    this.forumID = properties.forumID;
 
   }
 
@@ -80,15 +80,6 @@ export default class Post {
     }
 
     return likes;
-
-  }
-
-  async deleteLike(filter: Omit<Filter<LikeProperties>, "postID">): Promise<void> {
-
-    await Like.collection.deleteMany({
-      ...filter,
-      postID: this._id
-    });
 
   }
 
