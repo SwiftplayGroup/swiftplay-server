@@ -1,3 +1,10 @@
+/**
+ * A class representing a like.
+ * 
+ * Programmers: Christian Toney (https://github.com/Christian-Toney)
+ * © 2025 Swiftplay Group
+ */
+
 import { ObjectId } from "mongodb";
 import database from "#utils/database-generator.js";
 import isBSONError from "#utils/isBSONError.js";

@@ -1,3 +1,10 @@
+/**
+ * A class representing a post.
+ * 
+ * Programmers: Christian Toney (https://github.com/Christian-Toney)
+ * © 2025 Swiftplay Group
+ */
+
 import { Filter, ObjectId } from "mongodb";
 import database from "#utils/database-generator.js";
 import isBSONError from "#utils/isBSONError.js";
@@ -11,6 +18,7 @@ export type PostProperties = {
   parentPostID?: ObjectId;
   authorID: ObjectId;
   threadID: ObjectId;
+  forumID: ObjectId;
 }
 
 export default class Post {
@@ -18,6 +26,8 @@ export default class Post {
   readonly _id: ObjectId;
   authorID: ObjectId;
   content: string;
+  threadID: ObjectId;
+  forumID: ObjectId;
   parentPostID?: ObjectId;
   static collection = database.collection<PostProperties>("posts");
 
@@ -26,7 +36,27 @@ export default class Post {
     this._id = properties._id;
     this.content = properties.content;
     this.authorID = properties.authorID;
+    this.forumID = properties.forumID;
+    this.threadID = properties.threadID;
     this.parentPostID = properties.parentPostID;
+
+  }
+
+  /**
+   * Creates a post based on the given properties.
+   * @param properties Properties to create the post.
+   * @returns A newly created Post object.
+   */
+  static async create(properties: Omit<PostProperties, "_id">): Promise<Post> {
+
+    const postData = {
+      ...properties,
+      _id: new ObjectId()
+    };
+
+    this.collection.insertOne(postData);
+
+    return new Post(postData);
 
   }
 

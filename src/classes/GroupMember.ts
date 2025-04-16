@@ -1,3 +1,10 @@
+/**
+ * A class representing a group member.
+ * 
+ * Programmers: Christian Toney (https://github.com/Christian-Toney)
+ * © 2025 Swiftplay Group
+ */
+
 import { ObjectId } from "mongodb";
 import database from "#utils/database-generator.js";
 import { GroupMemberNotFoundError } from "./errors/GroupMemberNotFoundError.js";
