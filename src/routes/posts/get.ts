@@ -5,16 +5,15 @@
  * © 2025 Swiftplay Group
  */
 
-import { Router, Request } from "express";
+import { Router } from "express";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import Post from "#classes/Post.js";
-import getPostsRouter from "../threads/[threadID]/posts/get.js";
 
-const getThreadsRouter = Router({
+const getPostsRouter = Router({
   mergeParams: true,
 });
 
-getPostsRouter.get("/", async (req: Request<{ forumID: string }>, res) => {
+getPostsRouter.get("/", async (req, res) => {
 
   try {
 
@@ -44,4 +43,4 @@ getPostsRouter.get("/", async (req: Request<{ forumID: string }>, res) => {
 
 });
 
-export default getThreadsRouter;
+export default getPostsRouter;
