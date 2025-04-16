@@ -1,5 +1,5 @@
 /**
- * Get all threads.
+ * Get all posts from a specific thread.
  * 
  * Programmers: Christian Toney (https://github.com/Christian-Toney) and Michael Strange (https://github.com/michael-strange)
  * © 2025 Swiftplay Group
@@ -7,23 +7,24 @@
 
 import { Router, Request } from "express";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
-import Post from "#classes/Post.js";
-import { PostNotFoundError } from "#classes/errors/PostNotFoundError.js";
+import Thread from "#classes/Thread.js";
+import { ThreadNotFoundError } from "#classes/errors/ThreadNotFoundError.js";
 
-const getPostRouter = Router({
+const getPostsRouter = Router({
   mergeParams: true,
 });
 
-getPostRouter.get("/", async (req: Request<{ postID: string }>, res) => {
+getPostsRouter.get("/", async (req: Request<{ threadID: string }>, res) => {
 
   try {
 
-    const thread = await Post.getFromID(req.params.postID);
-    res.json(thread);
+    const thread = await Thread.getFromID(req.params.threadID);
+    const posts = await thread.getPosts();
+    res.json(posts);
 
   } catch (error) {
   
-    if (error instanceof InternalServerError || error instanceof PostNotFoundError) {
+    if (error instanceof InternalServerError || error instanceof ThreadNotFoundError) {
     
       res.status(error.statusCode).json({
         message: error.message
@@ -44,4 +45,4 @@ getPostRouter.get("/", async (req: Request<{ postID: string }>, res) => {
 
 });
 
-export default getPostRouter;
+export default getPostsRouter;

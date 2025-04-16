@@ -1,18 +1,40 @@
 import { Router, Request } from "express";
-import database from "#utils/database-generator.js";
-import { ObjectId } from "mongodb";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import { LikeNotFoundError } from "#classes/errors/LikeNotFoundError.js";
+import Like from "#classes/Like.js";
 
 const getLikeRouter = Router({
   mergeParams: true,
 });
 
-getLikeRouter.get("/", async (req: Request<{ LikeID: string }>, res) => {
-  const likeID = req.params.LikeID;
-  const like = await database
-    .collection("likes")
-    .findOne({ _id: new ObjectId(likeID) });
-  if (!like) return res.status(404).send("Like not found");
-  res.send(like);
+getLikeRouter.get("/", async (req: Request<{ likeID: string }>, res) => {
+
+  try {
+
+    const like = await Like.getFromID(req.params.likeID);
+    res.json(like);
+
+  } catch (error) {
+
+    if (error instanceof InternalServerError || error instanceof LikeNotFoundError) {
+
+      res.status(error.statusCode).json({
+        message: error.message
+      });
+
+    } else {
+
+      console.warn(error);
+
+      const internalServerError = new InternalServerError();
+      res.status(internalServerError.statusCode).json({
+        message: internalServerError.message
+      });
+
+    }
+
+  }
+  
 });
 
 export default getLikeRouter;

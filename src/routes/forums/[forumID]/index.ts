@@ -1,12 +1,12 @@
 import { Router } from "express";
 import getForumRouter from "./get.js";
-import postsRouter from "./posts/index.js";
+import threadsRouter from "./threads/index.js";
 
 const forumRouter = Router({
   mergeParams: true,
 });
 
 forumRouter.use("/", getForumRouter);
-forumRouter.use("/posts", postsRouter);
+forumRouter.use("/threads", threadsRouter);
 
 export default forumRouter;

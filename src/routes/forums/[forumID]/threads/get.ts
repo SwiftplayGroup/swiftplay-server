@@ -1,29 +1,30 @@
 /**
- * Get all threads.
+ * Get threads from a specific forum.
  * 
  * Programmers: Christian Toney (https://github.com/Christian-Toney) and Michael Strange (https://github.com/michael-strange)
  * © 2025 Swiftplay Group
  */
 
 import { Router, Request } from "express";
+import Forum from "#classes/Forum.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
-import Post from "#classes/Post.js";
-import { PostNotFoundError } from "#classes/errors/PostNotFoundError.js";
+import { ForumNotFoundError } from "#classes/errors/ForumNotFoundError.js";
 
-const getPostRouter = Router({
+const getThreadsRouter = Router({
   mergeParams: true,
 });
 
-getPostRouter.get("/", async (req: Request<{ postID: string }>, res) => {
+getThreadsRouter.get("/", async (req: Request<{ forumID: string }>, res) => {
 
   try {
 
-    const thread = await Post.getFromID(req.params.postID);
-    res.json(thread);
+    const forum = await Forum.getFromID(req.params.forumID);
+    const threads = await forum.getThreads();
+    res.json(threads);
 
   } catch (error) {
   
-    if (error instanceof InternalServerError || error instanceof PostNotFoundError) {
+    if (error instanceof InternalServerError || error instanceof ForumNotFoundError) {
     
       res.status(error.statusCode).json({
         message: error.message
@@ -44,4 +45,4 @@ getPostRouter.get("/", async (req: Request<{ postID: string }>, res) => {
 
 });
 
-export default getPostRouter;
+export default getThreadsRouter;

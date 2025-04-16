@@ -1,3 +1,10 @@
+/**
+ * A class representing a user.
+ * 
+ * Programmers: Christian Toney (https://github.com/Christian-Toney)
+ * © 2025 Swiftplay Group
+ */
+
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import { NoPermissionError } from "./errors/NoPermissionError.js";

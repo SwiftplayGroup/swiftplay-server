@@ -6,8 +6,8 @@ const deleteLikeRouter = Router({
   mergeParams: true,
 });
 
-deleteLikeRouter.delete("/", async (req: Request<{ LikeID: string }>, res) => {
-  const likeID = req.params.LikeID;
+deleteLikeRouter.delete("/", async (req: Request<{ likeID: string }>, res) => {
+  const likeID = req.params.likeID;
   const like = await database
     .collection("likes")
     .findOne({ _id: new ObjectId(likeID) });

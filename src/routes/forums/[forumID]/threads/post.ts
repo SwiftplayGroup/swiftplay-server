@@ -1,43 +1,63 @@
 /**
- * Create a post replying to another post.
+ * Create a thread on a specific forum.
  * 
- * Programmers: Christian Toney (https://github.com/Christian-Toney)
+ * Programmers: Christian Toney (https://github.com/Christian-Toney) and Michael Strange (https://github.com/michael-strange)
  * © 2025 Swiftplay Group
  */
 
 import { Request, Router } from "express";
 import authenticator from "#utils/authenticator.js";
 import { AuthenticatedResponse } from "#classes/User.js";
+import Forum from "#classes/Forum.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { ForumNotFoundError } from "#classes/errors/ForumNotFoundError.js";
-import Post from "#classes/Post.js";
 
-const createReplyRouter = Router({
+const createThreadRouter = Router({
   mergeParams: true,
 });
 
-createReplyRouter.use("/", authenticator);
-createReplyRouter.post("/", async (req: Request<{ postID: string }, unknown, {content: unknown}>, res: AuthenticatedResponse) => {
+createThreadRouter.use("/", authenticator);
+createThreadRouter.post("/", async (req: Request<{ forumID: string }, unknown, {title: unknown, content: unknown}>, res: AuthenticatedResponse) => {
 
   try {
 
     // Verify inputs.
+    if (typeof(req.body.title) !== "string" || req.body.title.length > 64) {
+
+      throw new BadRequestError("Title must be a string at most 64 characters long.");
+
+    }
+
     if (typeof(req.body.content) !== "string" || req.body.content.length > 2048) {
 
       throw new BadRequestError("Content must be a string at most 2048 characters long.");
 
     }
 
-    // Reply to the post.
-    const post = await Post.getFromID(req.params.postID);
-    const reply = await post.reply({
+    // Create thread and post.
+    const forum = await Forum.getFromID(req.params.forumID);
+    const thread = await forum.createThread({
+      title: req.body.title,
+      authorID: res.locals.user._id
+    });
+
+    const post = await thread.createPost({
       authorID: res.locals.user._id,
       content: req.body.content
     });
 
+    await thread.edit({
+      $set: {
+        mainPostID: post._id
+      }
+    });
+
     // Return the thread.
-    res.status(201).json(reply);
+    res.status(201).json({
+      ...thread,
+      mainPostID: post._id
+    });
 
   } catch (error) {
 
@@ -62,4 +82,4 @@ createReplyRouter.post("/", async (req: Request<{ postID: string }, unknown, {co
 
 });
 
-export default createReplyRouter;
+export default createThreadRouter;

@@ -5,25 +5,24 @@
  * © 2025 Swiftplay Group
  */
 
-import { Router, Request } from "express";
+import { Router } from "express";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
-import Post from "#classes/Post.js";
-import { PostNotFoundError } from "#classes/errors/PostNotFoundError.js";
+import Thread from "#classes/Thread.js";
 
-const getPostRouter = Router({
+const getThreadsRouter = Router({
   mergeParams: true,
 });
 
-getPostRouter.get("/", async (req: Request<{ postID: string }>, res) => {
+getThreadsRouter.get("/", async (req, res) => {
 
   try {
 
-    const thread = await Post.getFromID(req.params.postID);
-    res.json(thread);
+    const threads = await Thread.find();
+    res.json(threads);
 
   } catch (error) {
   
-    if (error instanceof InternalServerError || error instanceof PostNotFoundError) {
+    if (error instanceof InternalServerError) {
     
       res.status(error.statusCode).json({
         message: error.message
@@ -44,4 +43,4 @@ getPostRouter.get("/", async (req: Request<{ postID: string }>, res) => {
 
 });
 
-export default getPostRouter;
+export default getThreadsRouter;
