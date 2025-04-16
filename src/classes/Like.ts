@@ -1,27 +1,43 @@
 import { ObjectId } from "mongodb";
 import database from "#utils/database-generator.js";
-import isErrorBSONError from "#utils/isErrorBSONError.js";
+import isBSONError from "#utils/isBSONError.js";
 import { LikeNotFoundError } from "./errors/LikeNotFoundError.js";
 
 export type LikeProperties = {
   _id: ObjectId;
   userID: ObjectId;
+  postID: ObjectId;
 }
 
 export default class Like {
 
   readonly _id: ObjectId;
   userID: ObjectId;
+  postID: ObjectId;
   static collection = database.collection<LikeProperties>("likes");
 
   constructor(properties: LikeProperties) {
 
     this._id = properties._id;
     this.userID = properties.userID;
+    this.postID = properties.postID;
 
   }
 
-  static async getFromID(groupID: ObjectId | string) {
+  static async create(properties: Omit<LikeProperties, "_id">): Promise<Like> {
+
+    const likeData = {
+      ...properties,
+      _id: new ObjectId()
+    };
+
+    this.collection.insertOne(likeData);
+
+    return new Like(likeData);
+
+  }
+
+  static async getFromID(groupID: ObjectId | string): Promise<Like> {
 
     try {
 
@@ -39,7 +55,7 @@ export default class Like {
 
     } catch (error) {
 
-      if (isErrorBSONError(error)) {
+      if (isBSONError(error)) {
       
         throw new LikeNotFoundError(groupID);
   
