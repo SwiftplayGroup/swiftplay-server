@@ -1,16 +1,47 @@
-import { Router } from "express";
-import database from "#utils/database-generator.js";
+/**
+ * Get a specific thread.
+ * 
+ * Programmers: Christian Toney (https://github.com/Christian-Toney) and Michael Strange (https://github.com/michael-strange)
+ * © 2025 Swiftplay Group
+ */
 
-const getThreadRouter = Router();
+import { Router, Request } from "express";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import Thread from "#classes/Thread.js";
+import { ThreadNotFoundError } from "#classes/errors/ThreadNotFoundError.js";
 
-getThreadRouter.get("/", async (req, res) => {
+const getThreadRouter = Router({
+  mergeParams: true,
+});
+
+getThreadRouter.get("/", async (req: Request<{ threadID: string }>, res) => {
+
   try {
-    const docs = await database.collection("posts").find().toArray();
-    res.json(docs);
+
+    const thread = await Thread.getFromID(req.params.threadID);
+    res.json(thread);
+
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+  
+    if (error instanceof InternalServerError || error instanceof ThreadNotFoundError) {
+    
+      res.status(error.statusCode).json({
+        message: error.message
+      });
+
+    } else {
+
+      console.warn(error);
+
+      const internalServerError = new InternalServerError();
+      res.status(internalServerError.statusCode).json({
+        message: internalServerError.message
+      });
+
+    }
+  
   }
+
 });
 
 export default getThreadRouter;

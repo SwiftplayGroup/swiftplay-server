@@ -60,6 +60,21 @@ export default class Post {
 
   }
 
+  static async find(filter: Filter<PostProperties> = {}): Promise<Post[]> {
+  
+    const posts = [];
+
+    for (const postData of await this.collection.find(filter).toArray()) {
+
+      const post = new Post(postData);
+      posts.push(post);
+
+    }
+
+    return posts;
+
+  }
+
   static async getFromID(groupID: ObjectId | string): Promise<Post> {
 
     try {
@@ -151,6 +166,17 @@ export default class Post {
 
     await Post.collection.deleteOne({
       _id: this._id
+    });
+
+  }
+
+  async reply(properties: Omit<PostProperties, "_id" | "parentPostID" | "threadID" | "forumID">): Promise<Post> {
+
+    return await Post.create({
+      ...properties,
+      parentPostID: this._id,
+      threadID: this.threadID,
+      forumID: this.forumID
     });
 
   }

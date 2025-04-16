@@ -1,47 +1,46 @@
-// /**
-//  * Get all threads.
-//  * 
-//  * Programmers: Christian Toney (https://github.com/Christian-Toney) and Michael Strange (https://github.com/michael-strange)
-//  * © 2025 Swiftplay Group
-//  */
+/**
+ * Get all threads.
+ * 
+ * Programmers: Christian Toney (https://github.com/Christian-Toney) and Michael Strange (https://github.com/michael-strange)
+ * © 2025 Swiftplay Group
+ */
 
-// import { Router, Request } from "express";
-// import Forum from "#classes/Forum.js";
-// import { InternalServerError } from "#classes/errors/InternalServerError.js";
-// import { ForumNotFoundError } from "#classes/errors/ForumNotFoundError.js";
+import { Router } from "express";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import Thread from "#classes/Thread.js";
 
-// const getThreadsRouter = Router({
-//   mergeParams: true,
-// });
+const getThreadsRouter = Router({
+  mergeParams: true,
+});
 
-// getThreadsRouter.get("/", async (req: Request<{ forumID: string }>, res) => {
+getThreadsRouter.get("/", async (req, res) => {
 
-//   try {
+  try {
 
-//     const threads = await forum.getThreads();
-//     res.json(threads);
+    const threads = await Thread.find();
+    res.json(threads);
 
-//   } catch (error) {
+  } catch (error) {
   
-//     if (error instanceof InternalServerError || error instanceof ForumNotFoundError) {
+    if (error instanceof InternalServerError) {
     
-//       res.status(error.statusCode).json({
-//         message: error.message
-//       });
+      res.status(error.statusCode).json({
+        message: error.message
+      });
 
-//     } else {
+    } else {
 
-//       console.warn(error);
+      console.warn(error);
 
-//       const internalServerError = new InternalServerError();
-//       res.status(internalServerError.statusCode).json({
-//         message: internalServerError.message
-//       });
+      const internalServerError = new InternalServerError();
+      res.status(internalServerError.statusCode).json({
+        message: internalServerError.message
+      });
 
-//     }
+    }
   
-//   }
+  }
 
-// });
+});
 
-// export default getThreadsRouter;
+export default getThreadsRouter;

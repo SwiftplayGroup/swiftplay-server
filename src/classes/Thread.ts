@@ -94,6 +94,21 @@ export default class Thread {
 
   }
 
+  static async find(filter: Filter<ThreadProperties> = {}): Promise<Thread[]> {
+
+    const threads = [];
+
+    for (const threadData of await this.collection.find(filter).toArray()) {
+
+      const thread = new Thread(threadData);
+      threads.push(thread);
+
+    }
+
+    return threads;
+
+  }
+
   /**
    * Creates a post based on the given properties.
    * @param properties Properties to create the thread.
