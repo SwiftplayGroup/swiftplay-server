@@ -18,7 +18,8 @@ export default tseslint.config(
       "semi": ["warn", "always"],
       "no-empty": "warn",
       "prefer-const": "warn",
-      "no-useless-escape": "warn"
+      "no-useless-escape": "warn",
+      "no-unused-private-class-members": "warn"
     }
   }
 );

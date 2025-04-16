@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import database from "#utils/database-generator.js";
 import { GroupNotFoundError } from "./errors/GroupNotFoundError.js";
+import isErrorBSONError from "#utils/isErrorBSONError.js";
 
 export type GroupProperties = {
   _id: ObjectId;
@@ -37,7 +38,7 @@ export default class Group {
 
     } catch (error) {
 
-      if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
+      if (isErrorBSONError(error)) {
       
         throw new GroupNotFoundError(groupID);
   
