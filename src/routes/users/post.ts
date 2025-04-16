@@ -12,13 +12,13 @@ createUserRouter.post("/", async (request, response) => {
     return response.status(400).json({
       message: "Email address must be a string.",
     });
-  } else if (typeof username !== "string") {
+  } else if (typeof username !== "string" || username.length < 1 || username.length > 32) {
     return response.status(400).json({
-      message: "Username must be a string.",
+      message: "Username must be a string that ranges from 1 to 32 characters.",
     });
-  } else if (typeof password !== "string") {
+  } else if (typeof password !== "string" || password.length < 8 || username.length > 128) {
     return response.status(400).json({
-      message: "Password must be a string.",
+      message: "Password must be a string that ranges from 8 to 128 characters.",
     });
   } else if (!emailAddress.trim() || !username.trim() || !password) {
     return response.status(400).json({
