@@ -7,10 +7,33 @@ const getPostsRouter = Router({
 
 getPostsRouter.get("/", async (req: Request<{ forumID: string }>, res) => {
   const forumID = req.params.forumID;
-  const threadsOnly = req.query.threads_only === "true";
+  const type = req.query.type;
+  let filter = {};
+  if (type === "post") {
+
+    filter = {
+      parentPostID: {
+        $ne: null
+      }
+    };
+
+  } else if (type === "thread") {
+
+    filter = {
+      parentPostID: null
+    };
+
+  } else if (type !== undefined) {
+
+    return res.status(400).json({
+      message: `Type must be empty, "post", or "thread".`
+    });
+
+  }
+
   const query = { 
     forumID,
-    ...(threadsOnly ? {parentPostID: null} : {parentPostID: {$ne: null}})
+    ...filter
   };
   
   const posts = await database
