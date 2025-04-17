@@ -11,9 +11,10 @@ getCategoriesRouter.get("/", async (request: Request<{ gamePageID: string }>, re
     objectID = new ObjectId(request.params.gamePageID);
   } catch (error: unknown) {
     console.log(error);
-    return response.status(404).json({
+    response.status(404).json({
       message: "Game page not found.",
     });
+    return;
   }
 
   const document = await database.collection("gamePages").findOne({
@@ -21,9 +22,10 @@ getCategoriesRouter.get("/", async (request: Request<{ gamePageID: string }>, re
   });
 
   if (!document) {
-    return response.status(404).json({
+    response.status(404).json({
       message: "Game page not found.",
     });
+    return;
   }
 
   // Rename sensitive keys.
@@ -37,7 +39,7 @@ getCategoriesRouter.get("/", async (request: Request<{ gamePageID: string }>, re
     page[newKey] = document[key];
   }
 
-  return response.json(page);
+  response.json(page);
 });
 
 export default getCategoriesRouter;

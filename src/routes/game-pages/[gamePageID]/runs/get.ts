@@ -28,9 +28,10 @@ getRunsRouter.get("/", async (request: Request<{ gamePageID: string }>, response
 
     console.error(error);
 
-    return response.status(404).json({
+    response.status(404).json({
       message: "Game page not found."
     });
+    return;
 
   }
 
@@ -78,7 +79,7 @@ getRunsRouter.get("/", async (request: Request<{ gamePageID: string }>, response
 
   }
 
-  return response.json(runs);
+  response.json(runs);
 
 });
 

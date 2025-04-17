@@ -8,20 +8,20 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
   try {
 
-    const token = request.headers.token;
-    const accountIDString = request.headers["account-id"];
+    const token = request.headers.token ?? request.cookies.sessionToken;
+    const userIDString = request.headers["account-id"] ?? request.cookies.userID;
 
-    if (typeof(token) == "string" && typeof(accountIDString) == "string") {
+    if (typeof(token) == "string" && typeof(userIDString) == "string") {
 
-      const accountID = new ObjectId(accountIDString);
-      const sessions = await database.collection("sessions").find({accountID}).toArray();
+      const userID = new ObjectId(userIDString);
+      const sessions = await database.collection("sessions").find({userID}).toArray();
 
       for (const session of sessions) {
 
         if (await verify(session.tokenHash, token)) {
 
           // Save account data.
-          const user = await User.getFromID(accountID);
+          const user = await User.getFromID(userID);
           user.setSessionID(session._id);
           response.locals.user = user;
 
@@ -34,7 +34,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
     }
 
-    return response.status(401).json({
+    response.status(401).json({
       message: "Provide valid authentication token and account ID headers."
     });
 
@@ -42,7 +42,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later."
     });
 

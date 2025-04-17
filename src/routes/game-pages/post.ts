@@ -18,17 +18,21 @@ createGamePageRouter.post("/", async (request, response: AuthenticatedResponse) 
   const { name } = request.body;
   if (!name || typeof(name) !== "string") {
 
-    return response.status(400).json({
+    response.status(400).json({
       message: "A game page needs a name."
     });
+
+    return;
 
   }
 
   if (typeof(name) !== "string" || name.length === 0 || name.length > 128) {
 
-    return response.status(400).json({
+    response.status(400).json({
       message: "Name must be a string that ranges from 1 to 128 characters."
     });
+
+    return;
 
   }
 
@@ -41,9 +45,11 @@ createGamePageRouter.post("/", async (request, response: AuthenticatedResponse) 
 
     if (await database.collection("gamePages").countDocuments(similarNameFilter) > 0) {
 
-      return response.status(409).json({
+      response.status(409).json({
         message: "A game page with a similar name already exists."
       });
+
+      return;
 
     }
 
@@ -54,7 +60,7 @@ createGamePageRouter.post("/", async (request, response: AuthenticatedResponse) 
     // Add the event to the audit log.
     await addToAuditLog("gamePages.create", user._id, gamePageID, user.getSessionID());
 
-    return response.status(201).json({
+    response.status(201).json({
       id: gamePageID
     });
 
@@ -62,7 +68,7 @@ createGamePageRouter.post("/", async (request, response: AuthenticatedResponse) 
 
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our end. Try again later."
     });
 

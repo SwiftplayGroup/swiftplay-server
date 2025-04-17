@@ -24,20 +24,23 @@ createRunRouter.post("/", async (request: Request<{ gamePageID: string }>, respo
 
     console.warn(error);
 
-    return response.status(404).json({ message: "Game page not found." });
+    response.status(404).json({ message: "Game page not found." });
+    return;
 
   }
 
   // Convert time to an integer and validate
   const timeInt = parseInt(time, 10);
   if (isNaN(timeInt) || timeInt <= 0) {
-    return response.status(400).json({ message: "Time must be an integer, representing milliseconds." });
+    response.status(400).json({ message: "Time must be an integer, representing milliseconds." });
+    return;
   }
 
   // Verify that the user provides a valid YouTube video URL
   const youtubeRegex = /^(https?:\/\/)?((www\.)?youtube\.com\/watch\?v=|youtu\.?be\/).+$/;
   if (!url || typeof url !== "string" || !youtubeRegex.test(url)) {
-    return response.status(400).json({ message: "Invalid YouTube video URL." });
+    response.status(400).json({ message: "Invalid YouTube video URL." });
+    return;
   }
 
   // Log the received body
@@ -50,11 +53,11 @@ createRunRouter.post("/", async (request: Request<{ gamePageID: string }>, respo
       creatorID: response.locals.user._id 
     });
     // Return a 201 status code on success, along with the run ID
-    return response.status(201).json({ id: result.insertedId });
+    response.status(201).json({ id: result.insertedId });
   } catch (error) {
     console.error(error);
     // Return a 500 error if the database operation fails
-    return response.status(500).json({ message: "Internal server error." });
+    response.status(500).json({ message: "Internal server error." });
   }
 });
 

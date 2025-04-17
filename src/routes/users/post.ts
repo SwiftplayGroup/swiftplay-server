@@ -10,21 +10,29 @@ createUserRouter.post("/", async (request, response) => {
   const { emailAddress, username, password } = request.body;
 
   if (typeof emailAddress !== "string") {
-    return response.status(400).json({
+    response.status(400).json({
       message: "Email address must be a string.",
     });
+
+    return;
   } else if (typeof username !== "string" || username.length < 1 || username.length > 32) {
-    return response.status(400).json({
+    response.status(400).json({
       message: "Username must be a string that ranges from 1 to 32 characters.",
     });
+
+    return;
   } else if (typeof password !== "string" || password.length < 8 || username.length > 128) {
-    return response.status(400).json({
+    response.status(400).json({
       message: "Password must be a string that ranges from 8 to 128 characters.",
     });
+
+    return;
   } else if (!emailAddress.trim() || !username.trim() || !password) {
-    return response.status(400).json({
+    response.status(400).json({
       message: `A${!emailAddress ? "n email address" : !username ? " username" : " password"} is required to create an account.`,
     });
+
+    return;
   }
 
   // Ensure that there isn't another user with the same username.
@@ -34,9 +42,11 @@ createUserRouter.post("/", async (request, response) => {
   });
 
   if (conflictCount > 0) {
-    return response.status(409).json({
+    response.status(409).json({
       message: "That username is currently being used.",
     });
+
+    return;
   }
 
   // Create an encrypted hash of the user's password.
@@ -51,17 +61,18 @@ createUserRouter.post("/", async (request, response) => {
       password: hashedPassword,
     });
     accountID = result.insertedId;
+    
+    const user = await User.getFromID(accountID);
+
+    response.status(201).json(user);
   } catch (error: unknown) {
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
   }
 
-  const user = await User.getFromID(accountID);
-
-  return response.status(201).json(user);
 });
 
 export default createUserRouter;

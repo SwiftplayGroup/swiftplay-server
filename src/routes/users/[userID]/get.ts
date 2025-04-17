@@ -10,9 +10,10 @@ getUserRouter.get("/", async (request: Request<{ userID: string }>, response) =>
   try {
     accountID = new ObjectId(request.params.userID);
   } catch (error: unknown) {
-    return response.status(404).json({
+    response.status(404).json({
       message: `Account not found, ${error}`,
     });
+    return;
   }
 
   try {
@@ -20,9 +21,10 @@ getUserRouter.get("/", async (request: Request<{ userID: string }>, response) =>
       .collection("users")
       .findOne({ _id: accountID });
     if (!user) {
-      return response.status(404).json({
+      response.status(404).json({
         message: "Account not found.",
       });
+      return;
     }
 
     const account: { [key: string]: unknown } = {};
@@ -35,7 +37,7 @@ getUserRouter.get("/", async (request: Request<{ userID: string }>, response) =>
   } catch (error: unknown) {
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
   }

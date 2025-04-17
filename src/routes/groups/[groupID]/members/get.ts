@@ -21,13 +21,13 @@ getMembersRouter.get("/", async (request: Request<{groupID: string}>, response) 
     const group = await Group.getFromID(request.params.groupID);
 
     // Return the info to the client.
-    return response.json(await group.getMembers());
+    response.json(await group.getMembers());
 
   } catch (error: unknown) {
 
     if (error instanceof BadRequestError || error instanceof NotFoundError || error instanceof NoPermissionError) {
 
-      return response.status(error.statusCode).json({
+      response.status(error.statusCode).json({
         message: error.message
       });
 
@@ -35,7 +35,7 @@ getMembersRouter.get("/", async (request: Request<{groupID: string}>, response) 
       
       console.error(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our end. Try again later."
       });
 
