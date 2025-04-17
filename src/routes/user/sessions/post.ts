@@ -71,10 +71,9 @@ createSessionRouter.post("/", async (request, response) => {
   }
 
   // Return a 201 success, and a JSON response body with the session data.
-
   response
     .status(201)
-    .json({ ...sessionData, sessionID, sessionToken });
+    .json({ ...sessionData, sessionID, token: sessionToken });
 });
 
 export default createSessionRouter;
