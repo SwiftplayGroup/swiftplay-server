@@ -36,18 +36,20 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
     const keyCheck = keyChecks[key];
     if (!keyCheck) {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: `${key} is an invalid property.`
       });
+      return;
 
     }
     
     const responseMessage = keyCheck(request.body[key]);
     if (typeof(responseMessage) !== "boolean") {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: responseMessage
       });
+      return;
 
     }
 
@@ -65,9 +67,10 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
 
     if (!category) {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Category not found.",
       });
+      return;
 
     }
 
@@ -75,7 +78,7 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
 
     if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Category not found.",
       });
 
@@ -83,11 +86,13 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
 
       console.log(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our side. Try again later.",
       });
 
     }
+
+    return;
     
   }
 
@@ -106,13 +111,15 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
 
     console.warn(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
 
+    return;
+
   }
 
-  return response.status(200).json({
+  response.status(200).json({
     success: true
   });
 
