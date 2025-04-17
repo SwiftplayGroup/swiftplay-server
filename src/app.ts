@@ -13,10 +13,7 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(express.json());
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+app.use(cors());
 app.use(cookieParser());
 app.disable("x-powered-by");
 app.use("/runs", runsRouter);
