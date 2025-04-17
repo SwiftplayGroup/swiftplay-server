@@ -27,9 +27,10 @@ deleteGamePageRouter.delete("/", async (request: Request<{ gamePageID: string }>
 
     if (!gamePage) {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Game page not found.",
       });
+      return;
 
     }
 
@@ -37,7 +38,7 @@ deleteGamePageRouter.delete("/", async (request: Request<{ gamePageID: string }>
 
     if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Game page not found.",
       });
 
@@ -45,11 +46,13 @@ deleteGamePageRouter.delete("/", async (request: Request<{ gamePageID: string }>
 
       console.log(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our side. Try again later.",
       });
 
     }
+
+    return;
     
   }
 
@@ -71,13 +74,14 @@ deleteGamePageRouter.delete("/", async (request: Request<{ gamePageID: string }>
 
     console.warn(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
+    return;
 
   }
 
-  return response.status(204).json({
+  response.status(204).json({
     success: true
   });
 

@@ -21,9 +21,11 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
     console.error(error);
 
-    return response.status(404).json({
+    response.status(404).json({
       message: "Run not found."
     });
+
+    return;
 
   }
 
@@ -40,9 +42,11 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
     if (!runData) {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Run not found."
       });
+
+      return;
 
     }
 
@@ -50,9 +54,11 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
     const { account } = response.locals;
     if (!runData.creatorID.equals(account._id) && !(request.body.shouldBypassPermissions && account.isModerator)) {
 
-      return response.status(403).json({
+      response.status(403).json({
         message: "You don't have permission to update this run."
       });
+
+      return;
 
     }
 
@@ -60,9 +66,11 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
     if (!modifications || !(typeof (modifications) === "object" && !(modifications instanceof Array))) {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: `Your request body is missing a modifications object.`
       });
+
+      return;
 
     }
 
@@ -84,17 +92,21 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
       if (!validationCheckers[key](modifications[key])) {
 
-        return response.status(400).json({
+        response.status(400).json({
           message: `Validation failed for key ${key}. Check the key name and value and try again.`
         });
+
+        return;
 
       }
 
       if ((key === "isVerified" || key === "creatorID") && !response.locals.user.isModerator) {
 
-        return response.status(403).json({
+        response.status(403).json({
           message: `You don't have permission to modify the ${key} key.`
         });
+
+        return;
 
       }
 
@@ -109,17 +121,19 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
       $set: santitizedModifications
     });
 
+    response.status(200).json({});
+
   } catch (error: unknown) {
 
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our end. Try again later."
     });
 
-  }
+    return;
 
-  return response.status(200).json({});
+  }
 
 });
 

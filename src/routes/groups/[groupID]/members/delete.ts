@@ -68,7 +68,7 @@ removeMemberRouter.delete("/", async (request: Request<{groupID: string}, unknow
     }
 
     // Return the info to the client.
-    return response.status(204).json({
+    response.status(204).json({
       success: true
     });
 
@@ -76,7 +76,7 @@ removeMemberRouter.delete("/", async (request: Request<{groupID: string}, unknow
 
     if (error instanceof BadRequestError || error instanceof NotFoundError || error instanceof NoPermissionError) {
 
-      return response.status(error.statusCode).json({
+      response.status(error.statusCode).json({
         message: error.message
       });
 
@@ -84,7 +84,7 @@ removeMemberRouter.delete("/", async (request: Request<{groupID: string}, unknow
       
       console.error(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our end. Try again later."
       });
 

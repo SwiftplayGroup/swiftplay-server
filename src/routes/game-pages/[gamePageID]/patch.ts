@@ -29,18 +29,20 @@ editGamePageRouter.patch("/", async (request: Request<{ gamePageID: string }>, r
     const keyCheck = keyChecks[key];
     if (!keyCheck) {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: `${key} is an invalid property.`
       });
+      return;
 
     }
     
     const responseMessage = keyCheck(request.body[key]);
     if (typeof(responseMessage) !== "boolean") {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: responseMessage
       });
+      return;
 
     }
 
@@ -58,9 +60,10 @@ editGamePageRouter.patch("/", async (request: Request<{ gamePageID: string }>, r
 
     if (!gamePage) {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Game page not found.",
       });
+      return;
 
     }
 
@@ -68,7 +71,7 @@ editGamePageRouter.patch("/", async (request: Request<{ gamePageID: string }>, r
 
     if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Game page not found.",
       });
 
@@ -76,11 +79,13 @@ editGamePageRouter.patch("/", async (request: Request<{ gamePageID: string }>, r
 
       console.log(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our side. Try again later.",
       });
 
     }
+
+    return;
     
   }
 
@@ -99,13 +104,15 @@ editGamePageRouter.patch("/", async (request: Request<{ gamePageID: string }>, r
 
     console.warn(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
 
+    return;
+
   }
 
-  return response.status(200).json({
+  response.status(200).json({
     success: true
   });
 
