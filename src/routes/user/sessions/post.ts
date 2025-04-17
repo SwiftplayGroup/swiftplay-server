@@ -71,19 +71,10 @@ createSessionRouter.post("/", async (request, response) => {
   }
 
   // Return a 201 success, and a JSON response body with the session data.
-  const cookieSettings = {
-    secure: true,
-    httpOnly: true,
-    expirationDate
-  };
-
-  response.cookie("userID", userData._id, cookieSettings);
-  response.cookie("sessionToken", sessionToken, cookieSettings);
-  response.cookie("sessionID", sessionID, cookieSettings);
 
   response
     .status(201)
-    .json({ ...sessionData, sessionID });
+    .json({ ...sessionData, sessionID, sessionToken });
 });
 
 export default createSessionRouter;
