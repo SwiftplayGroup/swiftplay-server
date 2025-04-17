@@ -35,7 +35,8 @@ export type PermissionOverride = {
 }
 
 export type UserProperties = {
-  _id: ObjectId,
+  _id: ObjectId;
+  username: string;
   permissionOverrides?: PermissionOverride
 }
 
@@ -61,8 +62,10 @@ type Permission = (
 export default class User {
 
   readonly _id: ObjectId;
+  username: string;
   permissionOverrides?: PermissionOverride;
   #sessionID?: ObjectId;
+  static collection = database.collection<UserProperties>("users");
 
   static defaultPermissions = {
     gamePages: {
@@ -87,10 +90,11 @@ export default class User {
     }
   };
 
-  constructor(userProperties: UserProperties) {
+  constructor(properties: UserProperties) {
 
-    this._id = userProperties._id;
-    this.permissionOverrides = userProperties.permissionOverrides;
+    this._id = properties._id;
+    this.username = properties.username;
+    this.permissionOverrides = properties.permissionOverrides;
 
   }
 
@@ -98,7 +102,7 @@ export default class User {
 
     try {
 
-      const data = await database.collection("users").findOne({_id: new ObjectId(userID)});
+      const data = await this.collection.findOne({_id: new ObjectId(userID)});
       if (!data) {
 
         throw new UserNotFoundError(userID);

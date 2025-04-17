@@ -1,6 +1,7 @@
 import database from "#utils/database-generator.js";
 import { Router } from "express";
 import { hash as hashString } from "argon2";
+import User from "#classes/User.js";
 
 const createUserRouter = Router({mergeParams: true});
 
@@ -58,7 +59,9 @@ createUserRouter.post("/", async (request, response) => {
     });
   }
 
-  return response.status(201).json({ accountID });
+  const user = await User.getFromID(accountID);
+
+  return response.status(201).json(user);
 });
 
 export default createUserRouter;
