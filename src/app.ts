@@ -24,7 +24,11 @@ app.use("/groups", groupsRouter);
 app.use("/forums", forumsRouter);
 app.use("/likes", likesRouter);
 
-app.get("/", (_, response) => response.json({ success: true }));
+app.get("/", (_, response) => {
+  
+  response.json({ success: true });
+
+});
 
 const port = process.env.PORT;
 app.listen(port, () =>
