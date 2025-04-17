@@ -11,10 +11,9 @@ getGamePageRouter.get("/", async (request: Request<{ gamePageID: string }>, resp
     objectID = new ObjectId(request.params.gamePageID);
   } catch (error: unknown) {
     console.log(error);
-    response.status(404).json({
+    return response.status(404).json({
       message: "Game page not found.",
     });
-    return;
   }
 
   const document = await database.collection("gamePages").findOne({
@@ -22,10 +21,9 @@ getGamePageRouter.get("/", async (request: Request<{ gamePageID: string }>, resp
   });
 
   if (!document) {
-    response.status(404).json({
+    return response.status(404).json({
       message: "Game page not found.",
     });
-    return;
   }
 
   // Rename sensitive keys.
@@ -39,7 +37,7 @@ getGamePageRouter.get("/", async (request: Request<{ gamePageID: string }>, resp
     page[newKey] = document[key];
   }
 
-  response.json(page);
+  return response.json(page);
 });
 
 export default getGamePageRouter;

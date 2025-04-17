@@ -28,10 +28,9 @@ deleteCategoryRouter.delete("/", async (request: Request<{ categoryID: string }>
 
     if (!category) {
 
-      response.status(404).json({
+      return response.status(404).json({
         message: "Run category not found.",
       });
-      return;
 
     }
 
@@ -39,7 +38,7 @@ deleteCategoryRouter.delete("/", async (request: Request<{ categoryID: string }>
 
     if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
 
-      response.status(404).json({
+      return response.status(404).json({
         message: "Run category not found.",
       });
 
@@ -47,13 +46,11 @@ deleteCategoryRouter.delete("/", async (request: Request<{ categoryID: string }>
 
       console.log(error);
 
-      response.status(500).json({
+      return response.status(500).json({
         message: "Something bad happened on our side. Try again later.",
       });
 
     }
-
-    return;
     
   }
 
@@ -79,7 +76,7 @@ deleteCategoryRouter.delete("/", async (request: Request<{ categoryID: string }>
 
     await addToAuditLog("gamePages.categories.delete", user._id, category._id, user.getSessionID());
 
-    response.status(204).json({
+    return response.status(204).json({
       success: true
     });
 
@@ -87,7 +84,7 @@ deleteCategoryRouter.delete("/", async (request: Request<{ categoryID: string }>
 
     console.warn(error);
 
-    response.status(500).json({
+    return response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
 

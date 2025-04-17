@@ -9,12 +9,10 @@ import likesRouter from "./routes/likes/index.js";
 import postsRouter from "./routes/posts/index.js";
 import cors from "cors";
 import threadsRouter from "./routes/threads/index.js";
-import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(cookieParser());
 app.disable("x-powered-by");
 app.use("/runs", runsRouter);
 app.use("/user", userRouter);
@@ -26,11 +24,7 @@ app.use("/groups", groupsRouter);
 app.use("/forums", forumsRouter);
 app.use("/likes", likesRouter);
 
-app.get("/", (_, response) => {
-  
-  response.json({ success: true });
-
-});
+app.get("/", (_, response) => response.json({ success: true }));
 
 const port = process.env.PORT;
 app.listen(port, () =>

@@ -19,10 +19,9 @@ createCategoryRouter.post("/", async (request: Request<{ gamePageID: string }>, 
   const categoryName = request.body.name;
   if (typeof(categoryName) !== "string" || request.body.name.length > 64 || request.body.name.length < 1) {
 
-    response.status(400).json({
+    return response.status(400).json({
       message: "Name must be a string that ranges between 1 to 64 characters."
     });
-    return;
 
   }
   
@@ -35,10 +34,9 @@ createCategoryRouter.post("/", async (request: Request<{ gamePageID: string }>, 
 
     if (await database.collection("runCategories").countDocuments(similarNameFilter) > 0) {
 
-      response.status(409).json({
+      return response.status(409).json({
         message: "A category with a similar name already exists in that game page."
       });
-      return;
 
     }
 
@@ -50,13 +48,13 @@ createCategoryRouter.post("/", async (request: Request<{ gamePageID: string }>, 
     await addToAuditLog("gamePages.categories.create", user._id, categoryID, user.getSessionID());
 
     // Return the info to the client.
-    response.status(201).json({categoryID});
+    return response.status(201).json({categoryID});
 
   } catch (error: unknown) {
 
     console.error(error);
 
-    response.status(500).json({
+    return response.status(500).json({
       message: "Something bad happened on our end. Try again later."
     });
     

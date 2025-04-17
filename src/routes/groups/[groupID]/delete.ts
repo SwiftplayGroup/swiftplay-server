@@ -58,13 +58,14 @@ router.delete("/", async (request: Request<{groupID: string}>, response: Authent
     console.log(`Successfully deleted group: ${groupID}`);
 
     // Return the info to the client.
-    response.status(204).json({groupID});
+    return response.status(204).json({groupID});
 
   } catch (error: unknown) {
 
+
     if (error instanceof NoPermissionError) {
 
-      response.status(error.statusCode).json({
+      return response.status(error.statusCode).json({
         message: error.message
       });
 
@@ -72,7 +73,7 @@ router.delete("/", async (request: Request<{groupID: string}>, response: Authent
       
       console.error(error);
 
-      response.status(500).json({
+      return response.status(500).json({
         message: "Something bad happened on our end. Try again later."
       });
 

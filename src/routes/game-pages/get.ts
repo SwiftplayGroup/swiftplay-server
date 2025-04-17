@@ -34,13 +34,13 @@ getGamePagesRouter.get("/", async (request, response) => {
 
     }
 
-    response.json(pages);
+    return response.json(pages);
 
   } catch (error: unknown) {
 
     console.error(error);
 
-    response.status(500).json({
+    return response.status(500).json({
       message: "Something bad happened on our end. Try again later."
     });
 

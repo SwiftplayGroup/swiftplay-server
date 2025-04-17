@@ -21,11 +21,9 @@ deleteRunRouter.delete("/", async (request: Request<{ gamePageID: string; runID:
 
     console.error(error);
 
-    response.status(404).json({
+    return response.status(404).json({
       message: "Run not found."
     });
-
-    return;
 
   }
 
@@ -42,11 +40,9 @@ deleteRunRouter.delete("/", async (request: Request<{ gamePageID: string; runID:
 
     if (!runData) {
 
-      response.status(404).json({
+      return response.status(404).json({
         message: "Run not found."
       });
-
-      return;
 
     }
 
@@ -54,11 +50,9 @@ deleteRunRouter.delete("/", async (request: Request<{ gamePageID: string; runID:
     const { account } = response.locals;
     if (!runData.creatorID.equals(account._id) && !(request.body.shouldBypassPermissions && account.isModerator)) {
 
-      response.status(403).json({
+      return response.status(403).json({
         message: "You don't have permission to delete this run."
       });
-
-      return;
 
     }
 
@@ -73,13 +67,13 @@ deleteRunRouter.delete("/", async (request: Request<{ gamePageID: string; runID:
 
     }
 
-    response.status(204).json({});
+    return response.status(204).json({});
 
   } catch (error: unknown) {
 
     console.error(error);
 
-    response.status(500).json({
+    return response.status(500).json({
       message: "Something bad happened on our end. Try again later."
     });
 
