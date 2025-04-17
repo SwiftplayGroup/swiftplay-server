@@ -9,27 +9,10 @@ import likesRouter from "./routes/likes/index.js";
 import postsRouter from "./routes/posts/index.js";
 import cors from "cors";
 import threadsRouter from "./routes/threads/index.js";
-import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(express.json());
-app.use(cors({
-  origin: function(origin, callback) {
-
-    if (!origin || ["https://swiftplay.pages.dev", "https://localhost:3000"].includes(origin)) {
-
-      callback(null, origin);
-
-    } else {
-
-      callback(new Error("Not allowed by CORS"));
-
-    }
-
-  },
-  credentials: true
-}));
-app.use(cookieParser());
+app.use(cors());
 app.disable("x-powered-by");
 app.use("/runs", runsRouter);
 app.use("/user", userRouter);
@@ -41,11 +24,7 @@ app.use("/groups", groupsRouter);
 app.use("/forums", forumsRouter);
 app.use("/likes", likesRouter);
 
-app.get("/", (_, response) => {
-  
-  response.json({ success: true });
-
-});
+app.get("/", (_, response) => response.json({ success: true }));
 
 const port = process.env.PORT;
 app.listen(port, () =>
