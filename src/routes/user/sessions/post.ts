@@ -72,7 +72,6 @@ createSessionRouter.post("/", async (request, response) => {
 
   // Return a 201 success, and a JSON response body with the session data.
   const cookieSettings = {
-    sameSite: true,
     secure: true,
     httpOnly: true,
     expirationDate
