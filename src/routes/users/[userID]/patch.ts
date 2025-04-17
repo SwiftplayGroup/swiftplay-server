@@ -127,18 +127,22 @@ editUserRouter.patch("/", async (request: Request<{ userID: string }>, response)
     const keyCheck = keyChecks[key];
     if (!keyCheck) {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: `${key} is an invalid property.`
       });
+
+      return;
 
     }
     
     const responseMessage = keyCheck(request.body[key]);
     if (typeof(responseMessage) !== "boolean") {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: responseMessage
       });
+
+      return;
 
     }
 
@@ -157,9 +161,11 @@ editUserRouter.patch("/", async (request: Request<{ userID: string }>, response)
 
     if (!user) {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Account not found.",
       });
+
+      return;
 
     }
 
@@ -167,7 +173,7 @@ editUserRouter.patch("/", async (request: Request<{ userID: string }>, response)
 
     if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Account not found.",
       });
 
@@ -175,11 +181,13 @@ editUserRouter.patch("/", async (request: Request<{ userID: string }>, response)
 
       console.log(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our side. Try again later.",
       });
 
     }
+
+    return;
     
   }
 
@@ -195,22 +203,21 @@ editUserRouter.patch("/", async (request: Request<{ userID: string }>, response)
 
     await addToAuditLog("accounts.edit", actorID, user._id, response.locals.sessionID);
 
+    response.status(200).json({
+      success: true
+    });
+
   } catch (error: unknown) {
 
     console.warn(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
 
+    return;
+
   }
-
-  // Update properties.
-
-
-  return response.status(200).json({
-    success: true
-  });
 
 });
 

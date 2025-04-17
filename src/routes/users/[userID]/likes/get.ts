@@ -9,7 +9,8 @@ getUserLikesRouter.get("/", async (req: Request<{ accountID: string }>, res) => 
     const accountID = req.params.accountID;
 
     if (!ObjectId.isValid(accountID)) {
-      return res.status(400).send("Invalid user ID");
+      res.status(400).send("Invalid user ID");
+      return;
     }
 
     const likes = await database
@@ -17,7 +18,7 @@ getUserLikesRouter.get("/", async (req: Request<{ accountID: string }>, res) => 
       .find({ userId: new ObjectId(accountID) })
       .toArray();
 
-    res.send(likes);
+    res.json(likes);
   } catch (error) {
     console.error("Error fetching likes:", error);
     res.status(500).send("Internal server error");
