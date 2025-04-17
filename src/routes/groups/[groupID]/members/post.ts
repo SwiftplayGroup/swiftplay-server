@@ -66,7 +66,7 @@ addMemberRouter.post("/", async (request: Request<{groupID: string}, unknown, {u
     }
 
     // Return the info to the client.
-    return response.status(201).json({
+    response.status(201).json({
       success: true
     });
 
@@ -74,7 +74,7 @@ addMemberRouter.post("/", async (request: Request<{groupID: string}, unknown, {u
 
     if (error instanceof BadRequestError || error instanceof NotFoundError || error instanceof NoPermissionError) {
 
-      return response.status(error.statusCode).json({
+      response.status(error.statusCode).json({
         message: error.message
       });
 
@@ -82,7 +82,7 @@ addMemberRouter.post("/", async (request: Request<{groupID: string}, unknown, {u
       
       console.error(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our end. Try again later."
       });
 
