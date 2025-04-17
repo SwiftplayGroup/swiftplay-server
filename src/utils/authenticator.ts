@@ -8,7 +8,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
   try {
 
-    const token = request.headers.token;
+    const token = request.headers.token ?? request.cookies;
     const accountIDString = request.headers["account-id"];
 
     if (typeof(token) == "string" && typeof(accountIDString) == "string") {
@@ -34,7 +34,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
     }
 
-    return response.status(401).json({
+    response.status(401).json({
       message: "Provide valid authentication token and account ID headers."
     });
 
@@ -42,7 +42,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later."
     });
 

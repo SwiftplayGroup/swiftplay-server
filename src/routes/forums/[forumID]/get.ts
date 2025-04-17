@@ -12,7 +12,10 @@ getForumRouter.get("/", async (req: Request<{ forumID: string }>, res) => {
   const forum = await database
     .collection("forums")
     .findOne({ _id: new ObjectId(forumID) });
-  if (!forum) return res.status(404).send("Forum not found");
+  if (!forum) {
+    res.status(404).send("Forum not found");
+    return;
+  }
   res.send(forum);
 });
 

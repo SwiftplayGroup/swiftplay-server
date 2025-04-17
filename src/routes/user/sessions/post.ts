@@ -29,21 +29,16 @@ createSessionRouter.post("/", async (request, response) => {
   const userData = await usersCollection.findOne(userFilter);
 
   if (!(userData && (await verifyPassword(userData.password, password)))) {
-    return response.status(401).json({
-      message: "Incorrect username or password.",
-    });
   }
 
   // Create a random hashed token and save it to the user's profile in the database.
   const sessionToken = randomBytes(64).toString("hex");
-  const creationDate = new Date();
-  const expirationDate = new Date(creationDate);
-  expirationDate.setDate(creationDate.getDate() + 30);
+  const expirationDate = new Date();
+  expirationDate.setDate(expirationDate.getDate() + 14);
   const sessionData = {
-    creationDate,
     creationIP: request.socket.remoteAddress,
     expirationDate,
-    accountID: userData._id,
+    userID: userData._id,
   };
 
   let sessionID;
@@ -63,9 +58,20 @@ createSessionRouter.post("/", async (request, response) => {
   }
 
   // Return a 201 success, and a JSON response body with the session data.
+  const cookieSettings = {
+    sameSite: true,
+    secure: true,
+    httpOnly: true,
+    expirationDate
+  };
+
+  response.cookie("userID", userData._id, cookieSettings);
+  response.cookie("sessionToken", sessionToken, cookieSettings);
+  response.cookie("sessionID", sessionID, cookieSettings);
+
   return response
     .status(201)
-    .json({ ...sessionData, token: sessionToken, sessionID });
+    .json({ ...sessionData, sessionID });
 });
 
 export default createSessionRouter;
