@@ -9,17 +9,20 @@ createSessionRouter.post("/", async (request, response) => {
   // Verify that the user provides a valid username and password.
   const { username, password } = request.body;
   if (typeof username !== "string") {
-    return response.status(400).json({
+    response.status(400).json({
       message: "Username must be a string.",
     });
+    return;
   } else if (typeof password !== "string") {
-    return response.status(400).json({
+    response.status(400).json({
       message: "Password must be a string.",
     });
+    return;
   } else if (!username.trim() || !password) {
-    return response.status(400).json({
+    response.status(400).json({
       message: `A ${username ? "password" : "username"} is required.`,
     });
+    return;
   }
 
   const usersCollection = database.collection("users");
@@ -29,6 +32,13 @@ createSessionRouter.post("/", async (request, response) => {
   const userData = await usersCollection.findOne(userFilter);
 
   if (!(userData && (await verifyPassword(userData.password, password)))) {
+
+    response.status(401).json({
+      message: "Incorrect username or password.",
+    });
+
+    return;
+
   }
 
   // Create a random hashed token and save it to the user's profile in the database.
@@ -52,9 +62,12 @@ createSessionRouter.post("/", async (request, response) => {
   } catch (error: unknown) {
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
+
+    return;
+
   }
 
   // Return a 201 success, and a JSON response body with the session data.
@@ -69,7 +82,7 @@ createSessionRouter.post("/", async (request, response) => {
   response.cookie("sessionToken", sessionToken, cookieSettings);
   response.cookie("sessionID", sessionID, cookieSettings);
 
-  return response
+  response
     .status(201)
     .json({ ...sessionData, sessionID });
 });
