@@ -14,19 +14,7 @@ import cookieParser from "cookie-parser";
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: function(origin, callback) {
-
-    if (!origin || ["https://swiftplay.pages.dev", "https://localhost:3000"].includes(origin)) {
-
-      callback(null, origin);
-
-    } else {
-
-      callback(new Error("Not allowed by CORS"));
-
-    }
-
-  },
+  origin: true,
   credentials: true
 }));
 app.use(cookieParser());
