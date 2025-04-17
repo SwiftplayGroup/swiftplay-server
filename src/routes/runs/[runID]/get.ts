@@ -19,7 +19,9 @@ getRunRouter.get("/", async (request: Request<{ runID: string }>, response: Resp
 
     console.warn(error);
 
-    return response.status(404).json({ message: "Invalid game page ID or run ID." });
+    response.status(404).json({ message: "Invalid game page ID or run ID." });
+
+    return;
 
   }
 
@@ -31,13 +33,14 @@ getRunRouter.get("/", async (request: Request<{ runID: string }>, response: Resp
     });
 
     if (!run) {
-      return response.status(404).json({ message: "Run not found." });
+      response.status(404).json({ message: "Run not found." });
+      return;
     }
 
-    return response.json(run);
+    response.json(run);
   } catch (error) {
     console.error(error);
-    return response.status(500).json({ message: "Internal server error. Sowwy!" });
+    response.status(500).json({ message: "Internal server error. Sowwy!" });
   }
 
 });
