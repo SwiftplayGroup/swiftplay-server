@@ -34,7 +34,15 @@ getRunsRouter.get("/", async (request: Request<{ gameID: string }>, response) =>
       ]
     });
 
-    response.json(runs);
+    const extendedRuns = [];
+    for (const run of runs) {
+
+      const extendedRun = await run.getExtendedProperties();
+      extendedRuns.push(extendedRun);
+
+    }
+
+    response.json(extendedRuns);
 
   } catch (error: unknown) {
 
