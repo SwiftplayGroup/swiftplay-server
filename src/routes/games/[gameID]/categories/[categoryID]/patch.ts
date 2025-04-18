@@ -1,9 +1,11 @@
 import addToAuditLog from "#utils/addToAuditLog.js";
 import authenticator from "#utils/authenticator.js";
-import database from "#utils/database-generator.js";
 import { Request, Router } from "express";
-import { ObjectId } from "mongodb";
 import { AuthenticatedResponse } from "#classes/User.js";
+import RunCategory from "#classes/RunCategory.js";
+import { CategoryNotFoundError } from "#classes/errors/CategoryNotFoundError.js";
+import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
 
 const editCategoryRouter = Router({ mergeParams: true });
 
@@ -13,7 +15,7 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
   // Verify permissions.
   // TODO: Check game page permissions.
   const { user } = response.locals;
-  user.verifyPermission("gamePages.categories.edit", 1);
+  user.verifyPermission("games.categories.edit", 1);
 
   // Verify properties.
   for (const key of Object.keys(request.body)) {
@@ -55,31 +57,25 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
 
   }
 
-  let category;
-  const categoriesCollection = database.collection("runCategories");
-
   try {
     
-    const categoryID = new ObjectId(request.params.categoryID);
-    category = await categoriesCollection.findOne({
-      _id: new ObjectId(categoryID)
+    const category = await RunCategory.getFromID(request.params.categoryID);
+    await category.edit({
+      $set: request.body
     });
 
-    if (!category) {
+    await addToAuditLog("gamePages.categories.edit", user._id, category._id, user.getSessionID());
 
-      response.status(404).json({
-        message: "Category not found.",
-      });
-      return;
-
-    }
+    response.status(200).json({
+      success: true
+    });
 
   } catch (error: unknown) {
 
-    if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
+    if (error instanceof BadRequestError || error instanceof GameNotFoundError || error instanceof CategoryNotFoundError) {
 
-      response.status(404).json({
-        message: "Category not found.",
+      response.status(error.statusCode).json({
+        message: error.message,
       });
 
     } else {
@@ -91,37 +87,8 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
       });
 
     }
-
-    return;
     
   }
-
-  try {
-
-    await categoriesCollection.updateOne(
-      {_id: category._id},
-      {
-        $set: request.body
-      }
-    );
-
-    await addToAuditLog("gamePages.categories.edit", user._id, category._id, user.getSessionID());
-
-  } catch (error: unknown) {
-
-    console.warn(error);
-
-    response.status(500).json({
-      message: "Something bad happened on our side. Try again later.",
-    });
-
-    return;
-
-  }
-
-  response.status(200).json({
-    success: true
-  });
 
 });
 
