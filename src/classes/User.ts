@@ -12,28 +12,10 @@ import { Response } from "express";
 import { UserNotFoundError } from "./errors/UserNotFoundError.js";
 import Run from "./Run.js";
 import { createHash } from "crypto";
+import Permission, { PermissionAccessLevel } from "./Permission.js";
 
 export type PermissionOverride = {
-  games?: {
-    categories?: {
-      create?: number,
-      delete?: number,
-      edit?: number
-    },
-    create?: number,
-    delete?: number,
-    edit?: number
-  },
-  groups?: {
-    create?: number,
-    delete?: number,
-    members?: {
-      add?: number;
-      join?: number;
-      leave?: number;
-      remove?: number;
-    }
-  }
+  [permissionIDString: string]: number;
 }
 
 export type UserProperties = {
@@ -51,23 +33,6 @@ export type PrivateUserProperties = {
 
 export type AuthenticatedResponse<T = Record<string, unknown>> = Response<unknown, {user: User} & T>;
 
-type Permission = (
-  "accounts.edit" | 
-  "games.categories.create" | 
-  "games.categories.delete" | 
-  "games.categories.edit" | 
-  "games.create" | 
-  "games.delete" | 
-  "games.edit" |
-  "games.runs.create" |
-  "groups.create" |
-  "groups.delete" |
-  "groups.members.add" |
-  "groups.members.join" |
-  "groups.members.leave" |
-  "groups.members.remove"
-)
-
 export default class User {
 
   readonly _id: ObjectId;
@@ -80,33 +45,6 @@ export default class User {
   #emailAddress: string;
 
   static collection = database.collection<UserProperties & PrivateUserProperties>("users");
-
-  static defaultPermissions = {
-    games: {
-      categories: {
-        create: 0,
-        delete: 0,
-        edit: 0
-      },
-      create: 1,
-      delete: 0,
-      edit: 0,
-      runs: {
-        create: 1,
-        delete: 0
-      }
-    },
-    groups: {
-      create: 1,
-      delete: 0,
-      members: {
-        add: 0,
-        join: 1,
-        leave: 1,
-        remove: 0
-      }
-    }
-  };
 
   constructor(properties: UserProperties & PrivateUserProperties) {
 
@@ -220,51 +158,14 @@ export default class User {
 
   /**
    * Verifies that the user has a specific permission.
-   * @param permissionName
+   * @param permission
    * @param requiredPermissionLevel
    */
-  verifyPermission(permissionName: Permission, requiredPermissionLevel: 0 | 1 | 2) {
+  verifyPermission(permission: Permission, requiredAccessLevel: PermissionAccessLevel) {
 
-    const permissionTree = permissionName.split(".");
-    type SelectedPermission = {[key: string]: number | SelectedPermission};
-    let selectedDefaultPermissionObject: SelectedPermission = User.defaultPermissions;
-    type SelectedPermissionOverride = {[key: string]: number | SelectedPermissionOverride | undefined};
-    let selectedOverridePermissionObject: SelectedPermissionOverride | undefined = this.permissionOverrides;
-    let defaultPermissionLevel = 0;
-    let overridePermissionLevel = null;
-    for (const permission of permissionTree) {
+    const overrideAccessLevel = this.permissionOverrides?.[permission._id.toString()];
 
-      if (typeof(selectedDefaultPermissionObject[permission]) == "number") {
-
-        defaultPermissionLevel = selectedDefaultPermissionObject[permission];
-
-      } else {
-
-        selectedDefaultPermissionObject = selectedDefaultPermissionObject[permission];
-
-      }
-
-      if (selectedOverridePermissionObject?.[permission]) {
-
-        if (typeof(selectedOverridePermissionObject[permission]) == "number") {
-
-          overridePermissionLevel = selectedOverridePermissionObject[permission];
-  
-        } else {
-  
-          selectedOverridePermissionObject = selectedOverridePermissionObject[permission];
-  
-        }
-
-      } else {
-
-        overridePermissionLevel = null;
-
-      }
-
-    }
-
-    if (typeof(overridePermissionLevel) === "number" ? overridePermissionLevel < requiredPermissionLevel : defaultPermissionLevel < requiredPermissionLevel) {
+    if (overrideAccessLevel ? overrideAccessLevel < requiredAccessLevel : permission.defaultAccessLevel < requiredAccessLevel) {
   
       throw new NoPermissionError();
   

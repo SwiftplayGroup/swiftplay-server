@@ -13,6 +13,7 @@ import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
 import Group from "#classes/Group.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { NotFoundError } from "#classes/errors/NotFoundError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const addMemberRouter = Router({mergeParams: true});
 
@@ -28,6 +29,8 @@ addMemberRouter.post("/", async (request: Request<{groupID: string}, unknown, {u
     const { user } = response.locals;
     const { userIDs } = request.body;
     const users = [];
+    const joinGroupPermission = await Permission.getFromHierarchicalName("groups.members.leave");
+    const addMemberPermission = await Permission.getFromHierarchicalName("groups.members.remove");
     if (userIDs) {
 
       if (!(userIDs instanceof Array)) {
@@ -45,7 +48,7 @@ addMemberRouter.post("/", async (request: Request<{groupID: string}, unknown, {u
         }
 
         const newMemberUser = await User.getFromID(userID);
-        user.verifyPermission(newMemberUser._id.equals(user._id) ? "groups.members.join" : "groups.members.add", 1);
+        user.verifyPermission(newMemberUser._id.equals(user._id) ? joinGroupPermission : addMemberPermission, PermissionAccessLevel.USER);
         users.push(newMemberUser);
 
       }
@@ -53,7 +56,7 @@ addMemberRouter.post("/", async (request: Request<{groupID: string}, unknown, {u
     } else {
 
       users.push(user);
-      user.verifyPermission("groups.members.join", 1);
+      user.verifyPermission(addMemberPermission, PermissionAccessLevel.USER);
 
     }
 

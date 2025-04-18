@@ -4,6 +4,7 @@ import { Request, Router } from "express";
 import { AuthenticatedResponse } from "#classes/User.js";
 import RunCategory from "#classes/RunCategory.js";
 import { CategoryNotFoundError } from "#classes/errors/CategoryNotFoundError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const deleteCategoryRouter = Router({ mergeParams: true });
 
@@ -16,7 +17,8 @@ deleteCategoryRouter.delete("/", async (request: Request<{ categoryID: string }>
     // Verify permissions.
     // TODO: Check game permissions.
     const { user } = response.locals;
-    user.verifyPermission("games.categories.delete", 1);
+    const permission = await Permission.getFromHierarchicalName("games.categories.delete");
+    user.verifyPermission(permission, PermissionAccessLevel.USER);
 
     // Move all runs to the default category.
     const category = await RunCategory.getFromID(request.params.categoryID);

@@ -6,6 +6,7 @@ import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import Game from "#classes/Game.js";
 import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const createGamePageRouter = Router({mergeParams: true});
 
@@ -17,7 +18,8 @@ createGamePageRouter.post("/", async (request, response: AuthenticatedResponse) 
 
     // Verify permissions.
     const { user } = response.locals;
-    user.verifyPermission("games.create", 1);
+    const permission = await Permission.getFromHierarchicalName("games.create");
+    user.verifyPermission(permission, PermissionAccessLevel.USER);
 
     // Verify that a name was provided.
     const { name } = request.body;
