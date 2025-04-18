@@ -1,0 +1,94 @@
+import { Request, Router } from "express";
+import authenticator from "#utils/authenticator.js";
+import addToAuditLog from "#utils/addToAuditLog.js";
+import { AuthenticatedResponse } from "#classes/User.js";
+import Game from "#classes/Game.js";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
+import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
+
+const editGamePageRouter = Router({ mergeParams: true });
+
+editGamePageRouter.patch("/", authenticator);
+editGamePageRouter.patch("/", async (request: Request<{ gameID: string }>, response: AuthenticatedResponse) => {
+
+  try {
+
+    // Verify permissions.
+    // TODO: Check game page permissions.
+    const { user } = response.locals;
+    user.verifyPermission("games.edit", 1);
+
+    // Verify properties.
+    for (const key of Object.keys(request.body)) {
+
+      const keyChecks: {[key: string]: (value: unknown) => boolean | string} = {
+        name: (value: unknown) => (
+          typeof(value) !== "string" ? "Name must be a string." : (
+            value.length > 128 || value.length < 1 ? "Name must be between 1 to 128 characters." : true
+          )
+        )
+      };
+
+      const keyCheck = keyChecks[key];
+      if (!keyCheck) {
+
+        response.status(400).json({
+          message: `${key} is an invalid property.`
+        });
+        return;
+
+      }
+      
+      const responseMessage = keyCheck(request.body[key]);
+      if (typeof(responseMessage) !== "boolean") {
+
+        response.status(400).json({
+          message: responseMessage
+        });
+        return;
+
+      }
+
+    }
+
+    const game = await Game.getFromID(request.params.gameID);
+    await game.edit(
+      {
+        $set: request.body
+      }
+    );
+
+    await addToAuditLog("gamePages.edit", user._id, game._id, user.getSessionID());
+
+    response.status(200).json({
+      success: true
+    });
+
+  } catch (error: unknown) {
+
+    if (error instanceof BadRequestError || error instanceof NoPermissionError || error instanceof GameNotFoundError || error instanceof InternalServerError) {
+                        
+      response.status(error.statusCode).json({
+        message: error.message
+      });
+
+    } else {
+
+      console.error(error);
+
+      const internalServerError = new InternalServerError();
+      response.status(internalServerError.statusCode).json({
+        message: internalServerError.message
+      });
+
+    }
+
+  }
+
+  
+
+});
+
+export default editGamePageRouter;

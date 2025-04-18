@@ -10,9 +10,10 @@ import { Filter, ObjectId } from "mongodb";
 import { NoPermissionError } from "./errors/NoPermissionError.js";
 import { Response } from "express";
 import { UserNotFoundError } from "./errors/UserNotFoundError.js";
+import Run from "./Run.js";
 
 export type PermissionOverride = {
-  gamePages?: {
+  games?: {
     categories?: {
       create?: number,
       delete?: number,
@@ -44,13 +45,13 @@ export type AuthenticatedResponse<T = Record<string, unknown>> = Response<unknow
 
 type Permission = (
   "accounts.edit" | 
-  "gamePages.categories.create" | 
-  "gamePages.categories.delete" | 
-  "gamePages.categories.edit" | 
-  "gamePages.create" | 
-  "gamePages.delete" | 
-  "gamePages.edit" |
-  "gamePages.runs.create" |
+  "games.categories.create" | 
+  "games.categories.delete" | 
+  "games.categories.edit" | 
+  "games.create" | 
+  "games.delete" | 
+  "games.edit" |
+  "games.runs.create" |
   "groups.create" |
   "groups.delete" |
   "groups.members.add" |
@@ -68,7 +69,7 @@ export default class User {
   static collection = database.collection<UserProperties>("users");
 
   static defaultPermissions = {
-    gamePages: {
+    games: {
       categories: {
         create: 0,
         delete: 0,
@@ -76,7 +77,11 @@ export default class User {
       },
       create: 1,
       delete: 0,
-      edit: 0
+      edit: 0,
+      runs: {
+        create: 1,
+        delete: 0
+      }
     },
     groups: {
       create: 1,
@@ -145,6 +150,18 @@ export default class User {
   getSessionID(): ObjectId | undefined {
 
     return this.#sessionID;
+
+  }
+
+  /**
+   * Gets a list of runs that the user owns.
+   * @returns A list of Run objects.
+   */
+  async getRuns(): Promise<Run[]> {
+
+    return await Run.find({
+      ownerID: this._id
+    });
 
   }
 

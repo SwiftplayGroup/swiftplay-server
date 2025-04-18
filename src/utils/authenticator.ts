@@ -8,10 +8,10 @@ async function authenticator(request: Request, response: Response, next: NextFun
 
   try {
 
-    const token = request.headers.token ?? request.cookies.sessionToken;
-    const userIDString = request.headers["account-id"] ?? request.cookies.userID;
+    const token = request.headers.token;
+    const userIDString = request.headers["user-id"];
 
-    if (typeof(token) == "string" && typeof(userIDString) == "string") {
+    if (typeof(token) == "string" && typeof(userIDString) == "string" && token.trim() && userIDString.trim()) {
 
       const userID = new ObjectId(userIDString);
       const sessions = await database.collection("sessions").find({userID}).toArray();
@@ -35,7 +35,7 @@ async function authenticator(request: Request, response: Response, next: NextFun
     }
 
     response.status(401).json({
-      message: "Provide valid authentication token and account ID headers."
+      message: "Provide valid authentication token and user ID headers."
     });
 
   } catch (error: unknown) {
