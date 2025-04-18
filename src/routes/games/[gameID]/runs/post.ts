@@ -18,29 +18,31 @@ createRunRouter.post("/", async (request: Request<{ gameID: string }>, response:
     const { user } = response.locals;
     user.verifyPermission("games.runs.create", 1);
 
-    const { time, url } = request.body;
+    const { durationMilliseconds, youtubeWatchID } = request.body;
 
     // Convert time to an integer and validate
-    const timeInt = parseInt(time, 10);
+    const timeInt = parseInt(durationMilliseconds, 10);
     if (isNaN(timeInt) || timeInt <= 0) {
-      response.status(400).json({ message: "Time must be an integer, representing milliseconds." });
-      return;
+      
+      throw new BadRequestError("Duration must be an integer that is greater than 0.");
+
     }
 
     // Verify that the user provides a valid YouTube video URL
-    const youtubeRegex = /^(https?:\/\/)?((www\.)?youtube\.com\/watch\?v=|youtu\.?be\/).+$/;
-    if (!url || typeof url !== "string" || !youtubeRegex.test(url)) {
-      response.status(400).json({ message: "Invalid YouTube video URL." });
-      return;
+    const youtubeRegex = /^[^"&?\/\s]{11}$/gi;
+    if (typeof(youtubeWatchID) !== "string" || !youtubeRegex.test(youtubeWatchID)) {
+
+      throw new BadRequestError("Invalid YouTube watch ID.");
+
     }
 
     const game = await Game.getFromID(request.params.gameID);
 
     const run = await Run.create({ 
       gameID: game._id, 
-      time: timeInt, 
-      url, 
-      ownerID: response.locals.user._id 
+      durationMilliseconds: timeInt, 
+      youtubeWatchID, 
+      ownerID: response.locals.user._id
     });
 
     // Return a 201 status code on success, along with the run ID
