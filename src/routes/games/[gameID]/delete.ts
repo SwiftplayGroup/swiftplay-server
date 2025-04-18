@@ -7,6 +7,7 @@ import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
 import Game from "#classes/Game.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const deleteGamePageRouter = Router({ mergeParams: true });
 
@@ -18,7 +19,8 @@ deleteGamePageRouter.delete("/", async (request: Request<{ gameID: string }>, re
     // Verify permissions.
     // TODO: Check game page permissions.
     const { user } = response.locals;
-    user.verifyPermission("games.delete", 1);
+    const permission = await Permission.getFromHierarchicalName("games.delete");
+    user.verifyPermission(permission, PermissionAccessLevel.USER);
 
     // Delete game page.
     const game = await Game.getFromID(request.params.gameID);

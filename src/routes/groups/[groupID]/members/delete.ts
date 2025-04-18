@@ -14,6 +14,7 @@ import Group from "#classes/Group.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { NotFoundError } from "#classes/errors/NotFoundError.js";
 import GroupMember from "#classes/GroupMember.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const removeMemberRouter = Router({mergeParams: true});
 
@@ -29,6 +30,8 @@ removeMemberRouter.delete("/", async (request: Request<{groupID: string}, unknow
     const { user } = response.locals;
     const { userIDs } = request.body;
     const members = [];
+    const leaveGroupPermission = await Permission.getFromHierarchicalName("groups.members.leave");
+    const removeMemberPermission = await Permission.getFromHierarchicalName("groups.members.remove");
     if (userIDs) {
 
       if (!(userIDs instanceof Array)) {
@@ -46,7 +49,8 @@ removeMemberRouter.delete("/", async (request: Request<{groupID: string}, unknow
         }
 
         const member = await GroupMember.getFromUserID(group._id, userID);
-        user.verifyPermission(member.userID.equals(user._id) ? "groups.members.leave" : "groups.members.remove", 1);
+
+        user.verifyPermission(member.userID.equals(user._id) ? leaveGroupPermission : removeMemberPermission, PermissionAccessLevel.USER);
         members.push(member);
 
       }
@@ -54,7 +58,7 @@ removeMemberRouter.delete("/", async (request: Request<{groupID: string}, unknow
     } else {
 
       const member = await GroupMember.getFromUserID(group._id, user._id);
-      user.verifyPermission("groups.members.leave", 1);
+      user.verifyPermission(leaveGroupPermission, PermissionAccessLevel.USER);
       members.push(member);
 
     }

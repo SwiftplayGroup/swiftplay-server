@@ -7,6 +7,7 @@ import Game from "#classes/Game.js";
 import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const createCategoryRouter = Router({ mergeParams: true });
 
@@ -19,7 +20,8 @@ createCategoryRouter.post("/", async (request: Request<{ gameID: string }>, resp
     // Verify permissions.
     // TODO: Check game page permissions.
     const { user } = response.locals;
-    user.verifyPermission("games.categories.create", 1);
+    const permission = await Permission.getFromHierarchicalName("games.categories.create");
+    user.verifyPermission(permission, PermissionAccessLevel.USER);
 
     // Restrict the category name to a reasonable length.
     const categoryName = request.body.name;
