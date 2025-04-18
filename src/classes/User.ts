@@ -11,6 +11,7 @@ import { NoPermissionError } from "./errors/NoPermissionError.js";
 import { Response } from "express";
 import { UserNotFoundError } from "./errors/UserNotFoundError.js";
 import Run from "./Run.js";
+import { createHash } from "crypto";
 
 export type PermissionOverride = {
   games?: {
@@ -37,6 +38,7 @@ export type PermissionOverride = {
 
 export type UserProperties = {
   _id: ObjectId;
+  avatarURL?: string;
   username: string;
   permissionOverrides?: PermissionOverride;
   favoriteRunID?: ObjectId;
@@ -69,6 +71,7 @@ type Permission = (
 export default class User {
 
   readonly _id: ObjectId;
+  avatarURL?: string;
   username: string;
   permissionOverrides?: PermissionOverride;
   favoriteRunID?: ObjectId;
@@ -113,6 +116,13 @@ export default class User {
     this.#password = properties.password;
     this.#emailAddress = properties.emailAddress;
     this.permissionOverrides = properties.permissionOverrides;
+
+    if (this.#emailAddress) {
+
+      const avatarHash = createHash("sha256").update(this.#emailAddress).digest("hex");
+      this.avatarURL = `https://gravatar.com/avatar/${avatarHash}`;
+
+    }
 
   }
 
