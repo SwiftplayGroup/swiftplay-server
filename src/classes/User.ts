@@ -38,7 +38,12 @@ export type PermissionOverride = {
 export type UserProperties = {
   _id: ObjectId;
   username: string;
-  permissionOverrides?: PermissionOverride
+  permissionOverrides?: PermissionOverride;
+}
+
+export type PrivateUserProperties = {
+  password: string;
+  emailAddress: string;
 }
 
 export type AuthenticatedResponse<T = Record<string, unknown>> = Response<unknown, {user: User} & T>;
@@ -66,7 +71,10 @@ export default class User {
   username: string;
   permissionOverrides?: PermissionOverride;
   #sessionID?: ObjectId;
-  static collection = database.collection<UserProperties>("users");
+  #password: string;
+  #emailAddress: string;
+
+  static collection = database.collection<UserProperties & PrivateUserProperties>("users");
 
   static defaultPermissions = {
     games: {
@@ -95,10 +103,12 @@ export default class User {
     }
   };
 
-  constructor(properties: UserProperties) {
+  constructor(properties: UserProperties & PrivateUserProperties) {
 
     this._id = properties._id;
     this.username = properties.username;
+    this.#password = properties.password;
+    this.#emailAddress = properties.emailAddress;
     this.permissionOverrides = properties.permissionOverrides;
 
   }
@@ -132,7 +142,7 @@ export default class User {
 
   }
 
-  static async find(filter: Filter<UserProperties> = {}): Promise<User[]> {
+  static async find(filter: Filter<UserProperties & PrivateUserProperties> = {}): Promise<User[]> {
   
     const users = [];
 
@@ -150,6 +160,18 @@ export default class User {
   getSessionID(): ObjectId | undefined {
 
     return this.#sessionID;
+
+  }
+
+  getHashedPassword(): string {
+
+    return this.#password;
+
+  }
+
+  getEmailAddress(): string {
+
+    return this.#emailAddress;
 
   }
 
