@@ -165,7 +165,7 @@ export default class Permission {
         name: "Delete game pages",
         hierarchicalName: "games.delete",
         description: "",
-        defaultAccessLevel: PermissionAccessLevel.USER
+        defaultAccessLevel: PermissionAccessLevel.DENIED
       },
       {
         name: "Edit game pages",
