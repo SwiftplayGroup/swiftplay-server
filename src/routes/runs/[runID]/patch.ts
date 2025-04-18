@@ -51,8 +51,8 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
     }
 
     // Verify that the user has permission to delete the run.
-    const { account } = response.locals;
-    if (!runData.creatorID.equals(account._id) && !(request.body.shouldBypassPermissions && account.isModerator)) {
+    const { user } = response.locals;
+    if (!runData.ownerID.equals(user._id) && !(request.body.shouldBypassPermissions && user.isModerator)) {
 
       response.status(403).json({
         message: "You don't have permission to update this run."
@@ -77,11 +77,14 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
     const santitizedModifications: { [key: string]: unknown } = {};
     for (const key of Object.keys(modifications)) {
 
+      
+      const youtubeRegex = /^[^"&?\/\s]{11}$/gi;
+
       const validationCheckers: { [key: string]: (value: unknown) => boolean } = {
         isVerified: (value: unknown) => typeof (value) === "boolean",
-        creatorID: (value: unknown) => typeof (value) === "string",
-        time: (value: unknown) => typeof (value) === "number",
-        url: (value: unknown) => typeof (value) === "string"
+        ownerID: (value: unknown) => typeof (value) === "string",
+        durationMilliseconds: (value: unknown) => typeof (value) === "number",
+        youtubeWatchID: (value: unknown) => typeof (value) === "string" && youtubeRegex.test(value)
       };
 
       if (!validationCheckers[key]) {
@@ -100,7 +103,7 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
       }
 
-      if ((key === "isVerified" || key === "creatorID") && !response.locals.user.isModerator) {
+      if ((key === "isVerified" || key === "ownerID") && !response.locals.user.isModerator) {
 
         response.status(403).json({
           message: `You don't have permission to modify the ${key} key.`

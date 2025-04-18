@@ -15,11 +15,11 @@ import RunCategory, { RunCategoryProperties } from "./RunCategory.js";
 
 export type RunProperties = {
   _id: ObjectId;
-  time: number;
+  durationMilliseconds: number;
   gameID: ObjectId;
   categoryID?: ObjectId;
   ownerID: ObjectId;
-  url: string;
+  youtubeWatchID: string;
 }
 
 export type ExtendedRunProperties = RunProperties & {
@@ -31,22 +31,22 @@ export type ExtendedRunProperties = RunProperties & {
 export default class Run {
 
   readonly _id: ObjectId;
-  time: number;
+  durationMilliseconds: number;
   gameID: ObjectId;
   ownerID: ObjectId;
   categoryID?: ObjectId;
-  url: string;
+  youtubeWatchID: string;
 
   static collection = database.collection<RunProperties>("runs");
 
   constructor(properties: RunProperties) {
 
     this._id = properties._id;
-    this.time = properties.time;
+    this.durationMilliseconds = properties.durationMilliseconds;
     this.gameID = properties.gameID;
     this.ownerID = properties.ownerID;
     this.categoryID = properties.categoryID;
-    this.url = properties.url;
+    this.youtubeWatchID = properties.youtubeWatchID;
 
   }
 
