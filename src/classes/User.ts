@@ -6,7 +6,7 @@
  */
 
 import database from "#utils/database-generator.js";
-import { ObjectId } from "mongodb";
+import { Filter, ObjectId } from "mongodb";
 import { NoPermissionError } from "./errors/NoPermissionError.js";
 import { Response } from "express";
 import { UserNotFoundError } from "./errors/UserNotFoundError.js";
@@ -124,6 +124,21 @@ export default class User {
       }
 
     }
+
+  }
+
+  static async find(filter: Filter<UserProperties> = {}): Promise<User[]> {
+  
+    const users = [];
+
+    for (const userData of await this.collection.find(filter).toArray()) {
+
+      const user = new User(userData);
+      users.push(user);
+
+    }
+
+    return users;
 
   }
 
