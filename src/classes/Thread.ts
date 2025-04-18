@@ -165,4 +165,3 @@ export default class Thread {
     return posts;
   }
 }
-

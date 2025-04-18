@@ -37,7 +37,7 @@ export type PermissionOverride = {
 export type UserProperties = {
   _id: ObjectId;
   permissionOverrides?: PermissionOverride;
-  embeddings?: number[];
+  embeddings: number[] | null;
 };
 
 export type AuthenticatedResponse<T = Record<string, unknown>> = Response<
@@ -64,7 +64,7 @@ type Permission =
 export default class User {
   readonly _id: ObjectId;
   permissionOverrides?: PermissionOverride;
-  embeddings?: number[];
+  embeddings: number[] | null;
   #sessionID?: ObjectId;
 
   static defaultPermissions = {
@@ -174,4 +174,3 @@ export default class User {
     }
   }
 }
-

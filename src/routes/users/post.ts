@@ -2,7 +2,7 @@ import database from "#utils/database-generator.js";
 import { Router } from "express";
 import { hash as hashString } from "argon2";
 
-const createUserRouter = Router({mergeParams: true});
+const createUserRouter = Router({ mergeParams: true });
 
 createUserRouter.post("/", async (request, response) => {
   // Verify that a valid email address, username, and password were provided.
@@ -12,13 +12,22 @@ createUserRouter.post("/", async (request, response) => {
     return response.status(400).json({
       message: "Email address must be a string.",
     });
-  } else if (typeof username !== "string" || username.length < 1 || username.length > 32) {
+  } else if (
+    typeof username !== "string" ||
+    username.length < 1 ||
+    username.length > 32
+  ) {
     return response.status(400).json({
       message: "Username must be a string that ranges from 1 to 32 characters.",
     });
-  } else if (typeof password !== "string" || password.length < 8 || username.length > 128) {
+  } else if (
+    typeof password !== "string" ||
+    password.length < 8 ||
+    username.length > 128
+  ) {
     return response.status(400).json({
-      message: "Password must be a string that ranges from 8 to 128 characters.",
+      message:
+        "Password must be a string that ranges from 8 to 128 characters.",
     });
   } else if (!emailAddress.trim() || !username.trim() || !password) {
     return response.status(400).json({
@@ -48,6 +57,7 @@ createUserRouter.post("/", async (request, response) => {
       emailAddress,
       username,
       password: hashedPassword,
+      embeddings: null, //when a user likes a post, the first embed will be made.
     });
     accountID = result.insertedId;
   } catch (error: unknown) {

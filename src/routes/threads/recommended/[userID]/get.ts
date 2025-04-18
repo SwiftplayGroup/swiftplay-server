@@ -16,6 +16,10 @@ getRecommendedThreadsRouter.get(
         throw new InternalServerError("User not found");
       }
       const userEmbeddings = user.embeddings;
+      if (!userEmbeddings) {
+        throw new InternalServerError("User embeddings not found");
+        //for now this works, in the future return the top threads.
+      }
       const recommendedThreads = await database
         .collection("threads")
         .aggregate([
