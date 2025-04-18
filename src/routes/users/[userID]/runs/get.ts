@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import User from "#classes/User.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { UserNotFoundError } from "#classes/errors/UserNotFoundError.js";
+import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
 
 const getRunsRouter = Router({ mergeParams: true });
 
@@ -24,7 +25,7 @@ getRunsRouter.get("/", async (request: Request<{ userID: string }>, response: Re
 
   } catch (error) {
 
-    if (error instanceof InternalServerError || error instanceof UserNotFoundError) {
+    if (error instanceof InternalServerError || error instanceof GameNotFoundError || error instanceof UserNotFoundError) {
         
       response.status(error.statusCode).json({
         message: error.message
