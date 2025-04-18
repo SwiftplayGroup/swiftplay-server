@@ -1,6 +1,6 @@
 /**
  * Like a post.
- * 
+ *
  * Programmers: Christian Toney (https://github.com/Christian-Toney) and Michael Strange (https://github.com/michael-strange)
  * © 2025 Swiftplay Group
  */
@@ -12,44 +12,82 @@ import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import Post from "#classes/Post.js";
 import { PostNotFoundError } from "#classes/errors/PostNotFoundError.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import database from "#utils/database-generator.js";
 
 const createLikeRouter = Router({
   mergeParams: true,
 });
 
 createLikeRouter.use("/", authenticator);
-createLikeRouter.post("/", async (req: Request<{ postID: string }>, res: AuthenticatedResponse) => {
+createLikeRouter.post(
+  "/",
+  async (req: Request<{ postID: string }>, res: AuthenticatedResponse) => {
+    try {
+      // Get the post and create the like
+      const post = await Post.getFromID(req.params.postID);
+      const like = await post.like(res.locals.user._id);
 
-  try {
+      // Get the post's embeddings
+      const postData = await database
+        .collection("posts")
+        .findOne({ _id: post._id });
+      if (!postData) {
+        throw new PostNotFoundError(post._id);
+      }
 
-    // Reply to the post.
-    const post = await Post.getFromID(req.params.postID);
-    const like = await post.like(res.locals.user._id);
+      // Get the user's current embeddings
+      const user = await database
+        .collection("users")
+        .findOne({ _id: res.locals.user._id });
+      if (!user) {
+        throw new InternalServerError();
+      }
 
-    // Return the like.
-    res.status(201).json(like);
+      // If user has no embeddings yet, use the post's embeddings
+      if (!user.embeddings) {
+        await database
+          .collection("users")
+          .updateOne(
+            { _id: res.locals.user._id },
+            { $set: { embeddings: postData.embeddings } }
+          );
+      } else {
+        // Average the user's current embeddings with the post's embeddings
+        const newEmbeddings = user.embeddings.map(
+          (value: number, index: number) =>
+            (value + postData.embeddings[index]) / 2
+        );
 
-  } catch (error) {
+        await database
+          .collection("users")
+          .updateOne(
+            { _id: res.locals.user._id },
+            { $set: { embeddings: newEmbeddings } }
+          );
+      }
 
-    if (error instanceof InternalServerError || error instanceof PostNotFoundError || error instanceof BadRequestError) {
-        
-      res.status(error.statusCode).json({
-        message: error.message
-      });
+      // Return the like.
+      res.status(201).json(like);
+    } catch (error) {
+      if (
+        error instanceof InternalServerError ||
+        error instanceof PostNotFoundError ||
+        error instanceof BadRequestError
+      ) {
+        res.status(error.statusCode).json({
+          message: error.message,
+        });
+      } else {
+        console.warn(error);
 
-    } else {
-
-      console.warn(error);
-
-      const internalServerError = new InternalServerError();
-      res.status(internalServerError.statusCode).json({
-        message: internalServerError.message
-      });
-
+        const internalServerError = new InternalServerError();
+        res.status(internalServerError.statusCode).json({
+          message: internalServerError.message,
+        });
+      }
     }
-
   }
-
-});
+);
 
 export default createLikeRouter;
