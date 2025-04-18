@@ -17,9 +17,11 @@ createGroupRouter.post("/", async (request, response: AuthenticatedResponse) => 
   const { name } = request.body;
   if (typeof(name) !== "string" || name.length < 1 || name.length > 64) {
 
-    return response.status(400).json({
+    response.status(400).json({
       message: "Group name must be a string that ranges from 1 to 64 characters."
     });
+
+    return;
 
   }
 
@@ -33,9 +35,11 @@ createGroupRouter.post("/", async (request, response: AuthenticatedResponse) => 
 
     if (await database.collection("groups").countDocuments(similarNameFilter) > 0) {
 
-      return response.status(409).json({
+      response.status(409).json({
         message: "A group with a similar name already exists."
       });
+
+      return;
 
     }
 
@@ -52,13 +56,13 @@ createGroupRouter.post("/", async (request, response: AuthenticatedResponse) => 
     await addToAuditLog("groups.join", user._id, groupID, user.getSessionID());
 
     // Return the info to the client.
-    return response.status(201).json({groupID});
+    response.status(201).json({groupID});
 
   } catch (error: unknown) {
 
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our end. Try again later."
     });
     

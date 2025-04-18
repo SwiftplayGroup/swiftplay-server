@@ -6,13 +6,15 @@
  */
 
 import database from "#utils/database-generator.js";
-import { ObjectId } from "mongodb";
+import { Filter, ObjectId, UpdateFilter } from "mongodb";
 import { NoPermissionError } from "./errors/NoPermissionError.js";
 import { Response } from "express";
 import { UserNotFoundError } from "./errors/UserNotFoundError.js";
+import Run from "./Run.js";
+import { createHash } from "crypto";
 
 export type PermissionOverride = {
-  gamePages?: {
+  games?: {
     categories?: {
       create?: number;
       delete?: number;
@@ -36,39 +38,52 @@ export type PermissionOverride = {
 
 export type UserProperties = {
   _id: ObjectId;
-  permissionOverrides?: PermissionOverride;
   embeddings: number[] | null;
-};
+  avatarURL?: string;
+  username: string;
+  permissionOverrides?: PermissionOverride;
+  favoriteRunID?: ObjectId;
+}
 
-export type AuthenticatedResponse<T = Record<string, unknown>> = Response<
-  unknown,
-  { user: User } & T
->;
+export type PrivateUserProperties = {
+  password: string;
+  emailAddress: string;
+}
 
-type Permission =
-  | "accounts.edit"
-  | "gamePages.categories.create"
-  | "gamePages.categories.delete"
-  | "gamePages.categories.edit"
-  | "gamePages.create"
-  | "gamePages.delete"
-  | "gamePages.edit"
-  | "gamePages.runs.create"
-  | "groups.create"
-  | "groups.delete"
-  | "groups.members.add"
-  | "groups.members.join"
-  | "groups.members.leave"
-  | "groups.members.remove";
+export type AuthenticatedResponse<T = Record<string, unknown>> = Response<unknown, {user: User} & T>;
+
+type Permission = (
+  "accounts.edit" | 
+  "games.categories.create" | 
+  "games.categories.delete" | 
+  "games.categories.edit" | 
+  "games.create" | 
+  "games.delete" | 
+  "games.edit" |
+  "games.runs.create" |
+  "groups.create" |
+  "groups.delete" |
+  "groups.members.add" |
+  "groups.members.join" |
+  "groups.members.leave" |
+  "groups.members.remove"
+)
 
 export default class User {
   readonly _id: ObjectId;
+  avatarURL?: string;
+  username: string;
   permissionOverrides?: PermissionOverride;
   embeddings: number[] | null;
+  favoriteRunID?: ObjectId;
   #sessionID?: ObjectId;
+  #password: string;
+  #emailAddress: string;
+
+  static collection = database.collection<UserProperties & PrivateUserProperties>("users");
 
   static defaultPermissions = {
-    gamePages: {
+    games: {
       categories: {
         create: 0,
         delete: 0,
@@ -77,6 +92,10 @@ export default class User {
       create: 1,
       delete: 0,
       edit: 0,
+      runs: {
+        create: 1,
+        delete: 0
+      }
     },
     groups: {
       create: 1,
@@ -90,17 +109,29 @@ export default class User {
     },
   };
 
-  constructor(userProperties: UserProperties) {
-    this._id = userProperties._id;
-    this.permissionOverrides = userProperties.permissionOverrides;
+  constructor(properties: UserProperties & PrivateUserProperties) {
+
+    this._id = properties._id;
     this.embeddings = userProperties.embeddings;
+    this.username = properties.username;
+    this.favoriteRunID = properties.favoriteRunID;
+    this.#password = properties.password;
+    this.#emailAddress = properties.emailAddress;
+    this.permissionOverrides = properties.permissionOverrides;
+
+    if (this.#emailAddress) {
+
+      const avatarHash = createHash("sha256").update(this.#emailAddress).digest("hex");
+      this.avatarURL = `https://gravatar.com/avatar/${avatarHash}`;
+
+    }
+
   }
 
   static async getFromID(userID: ObjectId | string): Promise<User> {
     try {
-      const data = await database
-        .collection<User>("users") //type this as a user response.
-        .findOne({ _id: new ObjectId(userID) });
+      const data = await this.collection.findOne({_id: new ObjectId(userID)});
+      
       if (!data) {
         throw new UserNotFoundError(userID);
       }
@@ -115,8 +146,59 @@ export default class User {
     }
   }
 
+  static async find(filter: Filter<UserProperties & PrivateUserProperties> = {}): Promise<User[]> {
+  
+    const users = [];
+
+    for (const userData of await this.collection.find(filter).toArray()) {
+
+      const user = new User(userData);
+      users.push(user);
+
+    }
+
+    return users;
+
+  }
+
   getSessionID(): ObjectId | undefined {
     return this.#sessionID;
+  }
+
+  getEncryptedPassword(): string {
+
+    return this.#password;
+
+  }
+
+  getEmailAddress(): string {
+
+    return this.#emailAddress;
+
+  }
+
+  /**
+   * Updates a run based on the given properties.
+   * @param updateFilter A MongoDB filter object
+   */
+  async edit(updateFilter: UpdateFilter<UserProperties>): Promise<void> {
+
+    User.collection.updateOne({
+      _id: this._id
+    }, updateFilter);
+
+  }
+
+  /**
+   * Gets a list of runs that the user owns.
+   * @returns A list of Run objects.
+   */
+  async getRuns(): Promise<Run[]> {
+
+    return await Run.find({
+      ownerID: this._id
+    });
+
   }
 
   setSessionID(sessionID: ObjectId) {

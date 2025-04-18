@@ -2,7 +2,7 @@ import express from "express";
 import userRouter from "./routes/user/index.js";
 import usersRouter from "./routes/users/index.js";
 import runsRouter from "./routes/runs/index.js";
-import gamePagesRouter from "./routes/game-pages/index.js";
+import gamePagesRouter from "./routes/games/index.js";
 import groupsRouter from "./routes/groups/index.js";
 import forumsRouter from "./routes/forums/index.js";
 import likesRouter from "./routes/likes/index.js";
@@ -19,12 +19,16 @@ app.use("/user", userRouter);
 app.use("/users", usersRouter);
 app.use("/threads", threadsRouter);
 app.use("/posts", postsRouter);
-app.use("/game-pages", gamePagesRouter);
+app.use("/games", gamePagesRouter);
 app.use("/groups", groupsRouter);
 app.use("/forums", forumsRouter);
 app.use("/likes", likesRouter);
 
-app.get("/", (_, response) => response.json({ success: true }));
+app.get("/", (_, response) => {
+  
+  response.json({ success: true });
+
+});
 
 const port = process.env.PORT;
 app.listen(port, () =>

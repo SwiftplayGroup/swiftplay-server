@@ -9,17 +9,20 @@ createSessionRouter.post("/", async (request, response) => {
   // Verify that the user provides a valid username and password.
   const { username, password } = request.body;
   if (typeof username !== "string") {
-    return response.status(400).json({
+    response.status(400).json({
       message: "Username must be a string.",
     });
+    return;
   } else if (typeof password !== "string") {
-    return response.status(400).json({
+    response.status(400).json({
       message: "Password must be a string.",
     });
+    return;
   } else if (!username.trim() || !password) {
-    return response.status(400).json({
+    response.status(400).json({
       message: `A ${username ? "password" : "username"} is required.`,
     });
+    return;
   }
 
   const usersCollection = database.collection("users");
@@ -29,21 +32,23 @@ createSessionRouter.post("/", async (request, response) => {
   const userData = await usersCollection.findOne(userFilter);
 
   if (!(userData && (await verifyPassword(userData.password, password)))) {
-    return response.status(401).json({
+
+    response.status(401).json({
       message: "Incorrect username or password.",
     });
+
+    return;
+
   }
 
   // Create a random hashed token and save it to the user's profile in the database.
   const sessionToken = randomBytes(64).toString("hex");
-  const creationDate = new Date();
-  const expirationDate = new Date(creationDate);
-  expirationDate.setDate(creationDate.getDate() + 30);
+  const expirationDate = new Date();
+  expirationDate.setDate(expirationDate.getDate() + 14);
   const sessionData = {
-    creationDate,
     creationIP: request.socket.remoteAddress,
     expirationDate,
-    accountID: userData._id,
+    userID: userData._id,
   };
 
   let sessionID;
@@ -57,15 +62,18 @@ createSessionRouter.post("/", async (request, response) => {
   } catch (error: unknown) {
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our side. Try again later.",
     });
+
+    return;
+
   }
 
   // Return a 201 success, and a JSON response body with the session data.
-  return response
+  response
     .status(201)
-    .json({ ...sessionData, token: sessionToken, sessionID });
+    .json({ ...sessionData, sessionID, token: sessionToken });
 });
 
 export default createSessionRouter;

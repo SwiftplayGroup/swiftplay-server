@@ -21,9 +21,11 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
     console.error(error);
 
-    return response.status(404).json({
+    response.status(404).json({
       message: "Run not found."
     });
+
+    return;
 
   }
 
@@ -40,19 +42,23 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
     if (!runData) {
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Run not found."
       });
+
+      return;
 
     }
 
     // Verify that the user has permission to delete the run.
-    const { account } = response.locals;
-    if (!runData.creatorID.equals(account._id) && !(request.body.shouldBypassPermissions && account.isModerator)) {
+    const { user } = response.locals;
+    if (!runData.ownerID.equals(user._id) && !(request.body.shouldBypassPermissions && user.isModerator)) {
 
-      return response.status(403).json({
+      response.status(403).json({
         message: "You don't have permission to update this run."
       });
+
+      return;
 
     }
 
@@ -60,20 +66,25 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
     if (!modifications || !(typeof (modifications) === "object" && !(modifications instanceof Array))) {
 
-      return response.status(400).json({
+      response.status(400).json({
         message: `Your request body is missing a modifications object.`
       });
+
+      return;
 
     }
 
     const santitizedModifications: { [key: string]: unknown } = {};
     for (const key of Object.keys(modifications)) {
 
+      
+      const youtubeRegex = /^[^"&?\/\s]{11}$/gi;
+
       const validationCheckers: { [key: string]: (value: unknown) => boolean } = {
         isVerified: (value: unknown) => typeof (value) === "boolean",
-        creatorID: (value: unknown) => typeof (value) === "string",
-        time: (value: unknown) => typeof (value) === "number",
-        url: (value: unknown) => typeof (value) === "string"
+        ownerID: (value: unknown) => typeof (value) === "string",
+        durationMilliseconds: (value: unknown) => typeof (value) === "number",
+        youtubeWatchID: (value: unknown) => typeof (value) === "string" && youtubeRegex.test(value)
       };
 
       if (!validationCheckers[key]) {
@@ -84,17 +95,21 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
 
       if (!validationCheckers[key](modifications[key])) {
 
-        return response.status(400).json({
+        response.status(400).json({
           message: `Validation failed for key ${key}. Check the key name and value and try again.`
         });
 
+        return;
+
       }
 
-      if ((key === "isVerified" || key === "creatorID") && !response.locals.user.isModerator) {
+      if ((key === "isVerified" || key === "ownerID") && !response.locals.user.isModerator) {
 
-        return response.status(403).json({
+        response.status(403).json({
           message: `You don't have permission to modify the ${key} key.`
         });
+
+        return;
 
       }
 
@@ -109,17 +124,19 @@ editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: st
       $set: santitizedModifications
     });
 
+    response.status(200).json({});
+
   } catch (error: unknown) {
 
     console.error(error);
 
-    return response.status(500).json({
+    response.status(500).json({
       message: "Something bad happened on our end. Try again later."
     });
 
-  }
+    return;
 
-  return response.status(200).json({});
+  }
 
 });
 

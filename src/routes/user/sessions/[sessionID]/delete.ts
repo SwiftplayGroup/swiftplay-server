@@ -27,9 +27,11 @@ deleteSessionRouter.delete(
     } catch (error: unknown) {
       console.error(error);
 
-      return response.status(404).json({
+      response.status(404).json({
         message: "Session not found.",
       });
+
+      return;
     }
 
     try {
@@ -39,15 +41,17 @@ deleteSessionRouter.delete(
       if (deletedCount === 0) {
         throw new Error("Unable to delete session.");
       }
+
+      response.status(204).json({});
+
     } catch (error) {
       console.error(error);
 
-      return response.status(500).json({
+      response.status(500).json({
         message: "Something bad happened on our side. Try again later.",
       });
     }
-
-    return response.status(204).json({});
+    
   },
 );
 

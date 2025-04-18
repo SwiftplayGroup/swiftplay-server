@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
-import { ObjectId } from "mongodb";
-import database from "#utils/database-generator.js";
+import Run from "#classes/Run.js";
+import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import { RunNotFoundError } from "#classes/errors/RunNotFoundError.js";
 
 const getRunRouter = Router({ mergeParams: true });
 
@@ -8,36 +10,32 @@ getRunRouter.get("/", async (request: Request<{ runID: string }>, response: Resp
 
   const { runID } = request.params;
 
-  let gamePageObjectID;
-  let runObjectID;
-
   try {
 
-    runObjectID = new ObjectId(runID);
+    const run = await Run.getFromID(runID);
+    const extendedRun = await run.getExtendedProperties();
 
-  } catch (error: unknown) {
+    response.json(extendedRun);
 
-    console.warn(error);
+  } catch (error) {
+    
+    if (error instanceof BadRequestError || error instanceof RunNotFoundError || error instanceof InternalServerError) {
+                        
+      response.status(error.statusCode).json({
+        message: error.message
+      });
 
-    return response.status(404).json({ message: "Invalid game page ID or run ID." });
+    } else {
 
-  }
+      console.error(error);
 
-  try {
+      const internalServerError = new InternalServerError();
+      response.status(internalServerError.statusCode).json({
+        message: internalServerError.message
+      });
 
-    const run = await database.collection("runs").findOne({
-      gamePageID: gamePageObjectID,
-      _id: runObjectID
-    });
-
-    if (!run) {
-      return response.status(404).json({ message: "Run not found." });
     }
 
-    return response.json(run);
-  } catch (error) {
-    console.error(error);
-    return response.status(500).json({ message: "Internal server error. Sowwy!" });
   }
 
 });
