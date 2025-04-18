@@ -28,13 +28,13 @@ createThreadRouter.post(
       unknown,
       { title: unknown; content: unknown }
     >,
-    res: AuthenticatedResponse
+    res: AuthenticatedResponse,
   ) => {
     try {
       // Verify inputs.
       if (typeof req.body.title !== "string" || req.body.title.length > 64) {
         throw new BadRequestError(
-          "Title must be a string at most 64 characters long."
+          "Title must be a string at most 64 characters long.",
         );
       }
 
@@ -43,7 +43,7 @@ createThreadRouter.post(
         req.body.content.length > 2048
       ) {
         throw new BadRequestError(
-          "Content must be a string at most 2048 characters long."
+          "Content must be a string at most 2048 characters long.",
         );
       }
 
@@ -68,22 +68,18 @@ createThreadRouter.post(
         },
       });
 
-      // Generate embeddings for the thread
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-      const model = genAI.getGenerativeModel({
+      const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+      const embedResult = await ai.models.embedContent({
         model: "gemini-embedding-exp-03-07",
+        contents: thread.content, //note that here we can specify what we want it to embed it as, to get better results
       });
-      const embeddingResult = await model.embedContent(
-        req.body.title + " " + req.body.content
-      );
-      const embeddings = embeddingResult.embedding.values;
+      console.log(embedResult);
+      const embeddings = embedResult.embedding.values;
 
-      // Update thread with embeddings
       await database
         .collection("threads")
-        .updateOne({ _id: thread._id }, { $set: { embeddings } });
+        .updateOne({ _id: result._id }, { $set: { embeddings } });
 
-      // Return the thread.
       res.status(201).json({
         ...thread,
         mainPostID: post._id,
@@ -106,7 +102,7 @@ createThreadRouter.post(
         });
       }
     }
-  }
+  },
 );
 
 export default createThreadRouter;

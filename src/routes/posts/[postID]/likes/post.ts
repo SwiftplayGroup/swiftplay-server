@@ -12,7 +12,6 @@ import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import Post from "#classes/Post.js";
 import { PostNotFoundError } from "#classes/errors/PostNotFoundError.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import database from "#utils/database-generator.js";
 
 const createLikeRouter = Router({

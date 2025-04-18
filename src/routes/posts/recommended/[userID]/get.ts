@@ -47,5 +47,5 @@ getRecommendedPostsRouter.get(
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
     }
-  }
+  },
 );
