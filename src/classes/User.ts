@@ -6,7 +6,7 @@
  */
 
 import database from "#utils/database-generator.js";
-import { Filter, ObjectId } from "mongodb";
+import { Filter, ObjectId, UpdateFilter } from "mongodb";
 import { NoPermissionError } from "./errors/NoPermissionError.js";
 import { Response } from "express";
 import { UserNotFoundError } from "./errors/UserNotFoundError.js";
@@ -39,6 +39,7 @@ export type UserProperties = {
   _id: ObjectId;
   username: string;
   permissionOverrides?: PermissionOverride;
+  favoriteRunID?: ObjectId;
 }
 
 export type PrivateUserProperties = {
@@ -70,6 +71,7 @@ export default class User {
   readonly _id: ObjectId;
   username: string;
   permissionOverrides?: PermissionOverride;
+  favoriteRunID?: ObjectId;
   #sessionID?: ObjectId;
   #password: string;
   #emailAddress: string;
@@ -107,6 +109,7 @@ export default class User {
 
     this._id = properties._id;
     this.username = properties.username;
+    this.favoriteRunID = properties.favoriteRunID;
     this.#password = properties.password;
     this.#emailAddress = properties.emailAddress;
     this.permissionOverrides = properties.permissionOverrides;
@@ -172,6 +175,18 @@ export default class User {
   getEmailAddress(): string {
 
     return this.#emailAddress;
+
+  }
+
+  /**
+   * Updates a run based on the given properties.
+   * @param updateFilter A MongoDB filter object
+   */
+  async edit(updateFilter: UpdateFilter<UserProperties>): Promise<void> {
+
+    User.collection.updateOne({
+      _id: this._id
+    }, updateFilter);
 
   }
 
