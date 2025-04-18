@@ -9,6 +9,8 @@ import likesRouter from "./routes/likes/index.js";
 import postsRouter from "./routes/posts/index.js";
 import cors from "cors";
 import threadsRouter from "./routes/threads/index.js";
+import permissionsRouter from "./routes/permissions/index.js";
+import Permission from "#classes/Permission.js";
 
 const app = express();
 app.use(express.json());
@@ -19,6 +21,7 @@ app.use("/user", userRouter);
 app.use("/users", usersRouter);
 app.use("/threads", threadsRouter);
 app.use("/posts", postsRouter);
+app.use("/permissions", permissionsRouter);
 app.use("/games", gamePagesRouter);
 app.use("/groups", groupsRouter);
 app.use("/forums", forumsRouter);
@@ -29,6 +32,8 @@ app.get("/", (_, response) => {
   response.json({ success: true });
 
 });
+
+await Permission.initializeDefaultPermissions();
 
 const port = process.env.PORT;
 app.listen(port, () =>

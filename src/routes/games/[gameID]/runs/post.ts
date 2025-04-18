@@ -6,6 +6,7 @@ import Game from "#classes/Game.js";
 import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const createRunRouter = Router({mergeParams: true});
 
@@ -16,7 +17,8 @@ createRunRouter.post("/", async (request: Request<{ gameID: string }>, response:
   try {
 
     const { user } = response.locals;
-    user.verifyPermission("games.runs.create", 1);
+    const permission = await Permission.getFromHierarchicalName("games.runs.create");
+    user.verifyPermission(permission, PermissionAccessLevel.USER);
 
     const { durationMilliseconds, youtubeWatchID } = request.body;
 

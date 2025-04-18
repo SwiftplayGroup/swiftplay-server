@@ -6,6 +6,7 @@ import RunCategory from "#classes/RunCategory.js";
 import { CategoryNotFoundError } from "#classes/errors/CategoryNotFoundError.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const editCategoryRouter = Router({ mergeParams: true });
 
@@ -15,7 +16,8 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
   // Verify permissions.
   // TODO: Check game page permissions.
   const { user } = response.locals;
-  user.verifyPermission("games.categories.edit", 1);
+  const permission = await Permission.getFromHierarchicalName("games.categories.edit");
+  user.verifyPermission(permission, PermissionAccessLevel.USER);
 
   // Verify properties.
   for (const key of Object.keys(request.body)) {

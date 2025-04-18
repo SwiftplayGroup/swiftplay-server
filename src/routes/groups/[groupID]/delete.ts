@@ -14,6 +14,7 @@ import { AuthenticatedResponse } from "#classes/User.js";
 import { GroupMemberNotFoundError } from "#classes/errors/GroupMemberNotFoundError.js";
 import GroupMember from "#classes/GroupMember.js";
 import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const router = Router({mergeParams: true});
 
@@ -38,7 +39,8 @@ router.delete("/", async (request: Request<{groupID: string}>, response: Authent
       if (error instanceof NoPermissionError || error instanceof GroupMemberNotFoundError) {
 
         // Check if the user is a global moderator.
-        user.verifyPermission("groups.delete", 1);
+        const permission = await Permission.getFromHierarchicalName("groups.delete");
+        user.verifyPermission(permission, PermissionAccessLevel.USER);
 
       } else {
 

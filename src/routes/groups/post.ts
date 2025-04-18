@@ -3,6 +3,7 @@ import { Router } from "express";
 import addToAuditLog from "#utils/addToAuditLog.js";
 import authenticator from "#utils/authenticator.js";
 import { AuthenticatedResponse } from "#classes/User.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const createGroupRouter = Router();
 
@@ -11,7 +12,8 @@ createGroupRouter.post("/", async (request, response: AuthenticatedResponse) => 
 
   // Verify permissions.
   const { user } = response.locals;
-  user.verifyPermission("groups.create", 1);
+  const permission = await Permission.getFromHierarchicalName("groups.create");
+  user.verifyPermission(permission, PermissionAccessLevel.USER);
   
   // Validate input.
   const { name } = request.body;
