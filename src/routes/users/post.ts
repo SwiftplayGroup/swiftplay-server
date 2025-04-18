@@ -3,7 +3,7 @@ import { Router } from "express";
 import { hash as hashString } from "argon2";
 import User from "#classes/User.js";
 
-const createUserRouter = Router({mergeParams: true});
+const createUserRouter = Router({ mergeParams: true });
 
 createUserRouter.post("/", async (request, response) => {
   // Verify that a valid email address, username, and password were provided.
@@ -59,6 +59,7 @@ createUserRouter.post("/", async (request, response) => {
       emailAddress,
       username,
       password: hashedPassword,
+      embeddings: null, //when a user likes a post, the first embed will be made.
     });
     accountID = result.insertedId;
     

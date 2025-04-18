@@ -17,6 +17,8 @@
     "typescript-eslint": "^8.30.1"
   },
   "dependencies": {
+    "@google/genai": "^0.9.0",
+    "@google/generative-ai": "^0.24.0",
     "argon2": "^0.41.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -25,7 +27,7 @@
   },
   "scripts": {
     "build": "tsc -b --clean && tsc -b",
-    "start": "tsc && node --env-file=.env dist/app.js"
+    "start": "tsc && node --env-file=.env --trace-deprecation dist/app.js"
   },
   "imports": {
     "#utils/*": "./dist/utils/*",

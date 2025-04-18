@@ -1,6 +1,6 @@
 /**
  * A class representing a user.
- * 
+ *
  * Programmers: Christian Toney (https://github.com/Christian-Toney)
  * © 2025 Swiftplay Group
  */
@@ -20,6 +20,7 @@ export type PermissionOverride = {
 
 export type UserProperties = {
   _id: ObjectId;
+  embeddings: number[] | null;
   avatarURL?: string;
   username: string;
   permissionOverrides?: PermissionOverride;
@@ -34,11 +35,11 @@ export type PrivateUserProperties = {
 export type AuthenticatedResponse<T = Record<string, unknown>> = Response<unknown, {user: User} & T>;
 
 export default class User {
-
   readonly _id: ObjectId;
   avatarURL?: string;
   username: string;
   permissionOverrides?: PermissionOverride;
+  embeddings: number[] | null;
   favoriteRunID?: ObjectId;
   #sessionID?: ObjectId;
   #password: string;
@@ -49,6 +50,7 @@ export default class User {
   constructor(properties: UserProperties & PrivateUserProperties) {
 
     this._id = properties._id;
+    this.embeddings = properties.embeddings;
     this.username = properties.username;
     this.favoriteRunID = properties.favoriteRunID;
     this.#password = properties.password;
@@ -65,32 +67,21 @@ export default class User {
   }
 
   static async getFromID(userID: ObjectId | string): Promise<User> {
-
     try {
-
       const data = await this.collection.findOne({_id: new ObjectId(userID)});
-      if (!data) {
-
-        throw new UserNotFoundError(userID);
-
-      }
       
-      return new User(data);
-
-    } catch (error) {
-
-      if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
-
+      if (!data) {
         throw new UserNotFoundError(userID);
-  
-      } else {
-
-        throw error;
-
       }
 
+      return new User(data);
+    } catch (error) {
+      if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
+        throw new UserNotFoundError(userID);
+      } else {
+        throw error;
+      }
     }
-
   }
 
   static async find(filter: Filter<UserProperties & PrivateUserProperties> = {}): Promise<User[]> {
@@ -109,9 +100,7 @@ export default class User {
   }
 
   getSessionID(): ObjectId | undefined {
-
     return this.#sessionID;
-
   }
 
   getEncryptedPassword(): string {
@@ -151,9 +140,7 @@ export default class User {
   }
 
   setSessionID(sessionID: ObjectId) {
-
     this.#sessionID = sessionID;
-
   }
 
   /**
@@ -161,6 +148,7 @@ export default class User {
    * @param permission
    * @param requiredPermissionLevel
    */
+
   verifyPermission(permission: Permission, requiredAccessLevel: PermissionAccessLevel) {
 
     const overrideAccessLevel = this.permissionOverrides?.[permission._id.toString()];
@@ -168,10 +156,6 @@ export default class User {
     if (overrideAccessLevel ? overrideAccessLevel < requiredAccessLevel : permission.defaultAccessLevel < requiredAccessLevel) {
   
       throw new NoPermissionError();
-  
     }
-  
-  
   }
-
 }
