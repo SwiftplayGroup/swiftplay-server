@@ -99,7 +99,7 @@ export default class User {
   static async getFromID(userID: ObjectId | string): Promise<User> {
     try {
       const data = await database
-        .collection("users")
+        .collection<User>("users") //type this as a user response.
         .findOne({ _id: new ObjectId(userID) });
       if (!data) {
         throw new UserNotFoundError(userID);

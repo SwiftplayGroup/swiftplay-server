@@ -12,7 +12,7 @@ import Forum from "#classes/Forum.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { ForumNotFoundError } from "#classes/errors/ForumNotFoundError.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import database from "#utils/database-generator.js";
 
 const createThreadRouter = Router({
@@ -68,17 +68,17 @@ createThreadRouter.post(
         },
       });
 
-      const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const embedResult = await ai.models.embedContent({
         model: "gemini-embedding-exp-03-07",
-        contents: thread.content, //note that here we can specify what we want it to embed it as, to get better results
+        contents: thread.title, //note that here we can specify what we want it to embed it as, to get better results
       });
       console.log(embedResult);
-      const embeddings = embedResult.embedding.values;
+      const embeddings = embedResult.embeddings;
 
       await database
         .collection("threads")
-        .updateOne({ _id: result._id }, { $set: { embeddings } });
+        .updateOne({ _id: thread._id }, { $set: { embeddings } });
 
       res.status(201).json({
         ...thread,
