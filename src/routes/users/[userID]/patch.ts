@@ -1,8 +1,9 @@
+import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import Run from "#classes/Run.js";
+import User from "#classes/User.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
 import authenticator from "#utils/authenticator.js";
-import database from "#utils/database-generator.js";
 import { Request, Router } from "express";
-import { ObjectId } from "mongodb";
 
 const editUserRouter = Router({ mergeParams: true });
 
@@ -11,17 +12,19 @@ editUserRouter.patch("/", async (request: Request<{ userID: string }>, response)
 
   const { _id: actorID } = response.locals.user;
 
+  const user = await User.getFromID(request.params.userID);
+
   // Verify properties.
   const unsetPermissions: Record<string, any> = {};
   for (const key of Object.keys(request.body)) {
 
-    const keyChecks: {[key: string]: (value: unknown) => boolean | string} = {
+    const keyChecks: {[key: string]: (value: unknown) => unknown} = {
       permissionOverrides: (value: unknown) => {
 
         // Verify input.
         if (!value || typeof(value) !== "object") {
 
-          return "Permission overrides must be an object.";
+          throw new BadRequestError("Permission overrides must be an object.");
 
         }
 
@@ -119,82 +122,38 @@ editUserRouter.patch("/", async (request: Request<{ userID: string }>, response)
 
         }
 
-        return true;
+        return value;
+
+      },
+      favoriteRunID: async (value: unknown) => {
+
+        if (value === null) {
+
+          return value;
+
+        }
+
+        if (typeof(value) !== "string") {
+
+          throw new BadRequestError("favoriteRunID must be a valid run.");
+
+        }
+
+        const run = await Run.getFromID(value);
+        return run._id;
 
       }
     };
 
     const keyCheck = keyChecks[key];
-    if (!keyCheck) {
-
-      response.status(400).json({
-        message: `${key} is an invalid property.`
-      });
-
-      return;
-
-    }
     
-    const responseMessage = keyCheck(request.body[key]);
-    if (typeof(responseMessage) !== "boolean") {
+    request.body[key] = await keyCheck(request.body[key]);
 
-      response.status(400).json({
-        message: responseMessage
-      });
-
-      return;
-
-    }
-
-  }
-
-  // Make sure the account exists.
-  let user;
-  const usersCollection = database.collection("users");
-
-  try {
-    
-    const gamePageID = new ObjectId(request.params.userID);
-    user = await usersCollection.findOne({
-      _id: new ObjectId(gamePageID)
-    });
-
-    if (!user) {
-
-      response.status(404).json({
-        message: "Account not found.",
-      });
-
-      return;
-
-    }
-
-  } catch (error: unknown) {
-
-    if (error instanceof Error && error.name.slice(0, 9) === "BSONError") {
-
-      response.status(404).json({
-        message: "Account not found.",
-      });
-
-    } else {
-
-      console.log(error);
-
-      response.status(500).json({
-        message: "Something bad happened on our side. Try again later.",
-      });
-
-    }
-
-    return;
-    
   }
 
   try {
 
-    await usersCollection.updateOne(
-      {_id: user._id},
+    await user.edit(
       {
         $set: request.body,
         $unset: unsetPermissions
