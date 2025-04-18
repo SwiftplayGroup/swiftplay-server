@@ -112,7 +112,7 @@ export default class User {
   constructor(properties: UserProperties & PrivateUserProperties) {
 
     this._id = properties._id;
-    this.embeddings = userProperties.embeddings;
+    this.embeddings = properties.embeddings;
     this.username = properties.username;
     this.favoriteRunID = properties.favoriteRunID;
     this.#password = properties.password;
