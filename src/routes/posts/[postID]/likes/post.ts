@@ -24,11 +24,9 @@ createLikeRouter.post(
   "/",
   async (req: Request<{ postID: string }>, res: AuthenticatedResponse) => {
     try {
-      // Get the post and create the like
       const post = await Post.getFromID(req.params.postID);
       const like = await post.like(res.locals.user._id);
 
-      // Get the post's embeddings
       const postData = await database
         .collection("posts")
         .findOne({ _id: post._id });
@@ -36,7 +34,6 @@ createLikeRouter.post(
         throw new PostNotFoundError(post._id);
       }
 
-      // Get the user's current embeddings
       const user = await database
         .collection("users")
         .findOne({ _id: res.locals.user._id });
@@ -50,20 +47,24 @@ createLikeRouter.post(
           .collection("users")
           .updateOne(
             { _id: res.locals.user._id },
-            { $set: { embeddings: postData.embeddings } }
+            { $set: { embeddings: postData.embeddings } },
           );
       } else {
         // Average the user's current embeddings with the post's embeddings
+        // Something to look at:
+        // Date of embeddings should have a weight, that way
+        // something a user liked 1 year ago doesnt effect as much as something
+        // the user just liked. Maybe even expiration dates for embeds.
         const newEmbeddings = user.embeddings.map(
           (value: number, index: number) =>
-            (value + postData.embeddings[index]) / 2
+            (value + postData.embeddings[index]) / 2,
         );
 
         await database
           .collection("users")
           .updateOne(
             { _id: res.locals.user._id },
-            { $set: { embeddings: newEmbeddings } }
+            { $set: { embeddings: newEmbeddings } },
           );
       }
 
@@ -87,7 +88,7 @@ createLikeRouter.post(
         });
       }
     }
-  }
+  },
 );
 
 export default createLikeRouter;
