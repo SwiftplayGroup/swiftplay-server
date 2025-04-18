@@ -163,7 +163,7 @@ export default class User {
 
   }
 
-  getHashedPassword(): string {
+  getEncryptedPassword(): string {
 
     return this.#password;
 
