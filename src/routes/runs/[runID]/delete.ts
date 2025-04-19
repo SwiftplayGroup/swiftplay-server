@@ -1,87 +1,54 @@
 import { Router, Request } from "express";
-import { ObjectId } from "mongodb";
-import database from "#utils/database-generator.js";
 import authenticator from "#utils/authenticator.js";
+import Run from "#classes/Run.js";
+import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
+import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import { RunNotFoundError } from "#classes/errors/RunNotFoundError.js";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import User from "#classes/User.js";
 
 const deleteRunRouter = Router({ mergeParams: true });
 
 deleteRunRouter.delete("/", authenticator);
-deleteRunRouter.delete("/", async (request: Request<{ gamePageID: string; runID: string }>, response) => {
-
-  // Confirm that the run ID is valid.
-  let runID;
-  let gamePageID;
+deleteRunRouter.delete("/", async (request: Request<{ runID: string }>, response) => {
 
   try {
-
-    runID = new ObjectId(request.params.runID);
-    gamePageID = new ObjectId(request.params.gamePageID);
-
-  } catch (error: unknown) {
-
-    console.error(error);
-
-    response.status(404).json({
-      message: "Run not found."
-    });
-
-    return;
-
-  }
-
-  try {
-
-    // Verify that the run exists.
-    const runsCollection = database.collection("runs");
-    const runFilter = {
-      _id: runID,
-      gamePageID
-    };
-
-    const runData = await runsCollection.findOne(runFilter);
-
-    if (!runData) {
-
-      response.status(404).json({
-        message: "Run not found."
-      });
-
-      return;
-
-    }
 
     // Verify that the user has permission to delete the run.
-    const { user } = response.locals;
-    if (!runData.ownerID.equals(user._id) && !(request.body.shouldBypassPermissions && user.isModerator)) {
+    const run = await Run.getFromID(request.params.runID);
 
-      response.status(403).json({
-        message: "You don't have permission to delete this run."
-      });
+    const user: User = response.locals.user;
+    if (!run.ownerID.equals(user._id)) {
 
-      return;
+      throw new NoPermissionError();
 
     }
 
-    // Try to delete the run.
-    const { deletedCount } = await runsCollection.deleteOne({
-      _id: runData._id
-    });
+    // Delete the run.
+    await run.delete();
 
-    if (deletedCount == 0) {
-
-      throw new Error("Unknown error while deleting the run.");
-
-    }
-
-    response.status(204).json({});
+    // Let the client know everything went OK.
+    console.log(`Successfully deleted Run ${run._id}`);
+    response.sendStatus(204);
 
   } catch (error: unknown) {
 
-    console.error(error);
+    if (error instanceof BadRequestError || error instanceof RunNotFoundError || error instanceof InternalServerError || error instanceof NoPermissionError) {
+                            
+      response.status(error.statusCode).json({
+        message: error.message
+      });
 
-    response.status(500).json({
-      message: "Something bad happened on our end. Try again later."
-    });
+    } else {
+
+      console.error(error);
+
+      const internalServerError = new InternalServerError();
+      response.status(internalServerError.statusCode).json({
+        message: internalServerError.message
+      });
+
+    }
 
   }
 

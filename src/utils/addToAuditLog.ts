@@ -4,13 +4,14 @@ import { ObjectId } from "mongodb";
 
 export type EventName = (
   "accounts.edit" | 
-  "gamePages.categories.create" | 
-  "gamePages.categories.delete" | 
-  "gamePages.categories.edit" | 
-  "gamePages.create" | 
-  "gamePages.delete" | 
-  "gamePages.edit" |
-  "gamePages.runs.create" |
+  "games.categories.create" | 
+  "games.categories.delete" | 
+  "games.categories.edit" | 
+  "games.create" | 
+  "games.delete" | 
+  "games.edit" |
+  "games.runs.create" |
+  "games.runs.edit" |
   "groups.create" |
   "groups.delete" |
   "groups.join" |

@@ -1,140 +1,158 @@
 import { Router, Request } from "express";
-import { ObjectId } from "mongodb";
-import database from "#utils/database-generator.js";
 import authenticator from "#utils/authenticator.js";
+import User from "#classes/User.js";
+import Run from "#classes/Run.js";
+import addToAuditLog from "#utils/addToAuditLog.js";
+import { BadRequestError } from "#classes/errors/BadRequestError.js";
+import { RunNotFoundError } from "#classes/errors/RunNotFoundError.js";
+import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
+import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
 
 const editRunRouter = Router({ mergeParams: true });
 
 editRunRouter.patch("/", authenticator);
-editRunRouter.patch("/", async (request: Request<{ gamePageID: string; runID: string }>, response) => {
-
-  // Confirm that the run ID is valid.
-  let runID;
-  let gamePageID;
+editRunRouter.patch("/", async (request: Request<{ runID: string }>, response) => {
 
   try {
 
-    runID = new ObjectId(request.params.runID);
-    gamePageID = new ObjectId(request.params.gamePageID);
+    const actor: User = response.locals.user;
+    let targetRun = await Run.getFromID(request.params.runID);
 
-  } catch (error: unknown) {
+    // Verify properties.
+    const unsetProperties: {[key: string]: 1} = {};
+    for (const key of Object.keys(request.body)) {
 
-    console.error(error);
+      const youtubeRegex = /^[^"&?/\s]{11}$/gi;
+      const keyChecks: {[key: string]: (value: unknown) => unknown} = {
+        verification: async (verification: unknown) => {
 
-    response.status(404).json({
-      message: "Run not found."
-    });
+          // Make sure the user can do this.
+          const verifyRunsPermission = await Permission.getFromHierarchicalName("games.runs.verify");
+          actor.verifyPermission(verifyRunsPermission, PermissionAccessLevel.USER);
 
-    return;
+          if (verification === null) {
 
-  }
+            unsetProperties.verification = 1;
 
-  try {
+          } else if (typeof(verification) === "object" && !(verification instanceof Array)) {
 
-    // Verify that the run exists.
-    const runsCollection = database.collection("runs");
-    const runFilter = {
-      _id: runID,
-      gamePageID
-    };
+            const validatedVerification: Record<string, unknown> = {};
 
-    const runData = await runsCollection.findOne(runFilter);
+            for (const property of Object.keys(verification)) {
 
-    if (!runData) {
+              const validators: {[property: string]: (property: unknown) => unknown} = {
+                ownerID: async (ownerID: unknown) => {
 
-      response.status(404).json({
-        message: "Run not found."
-      });
+                  // Verify user exists.
+                  if (typeof(ownerID) !== "string") {
 
-      return;
+                    throw new BadRequestError("ownerID must be a user ID.");
 
-    }
+                  }
 
-    // Verify that the user has permission to delete the run.
-    const { user } = response.locals;
-    if (!runData.ownerID.equals(user._id) && !(request.body.shouldBypassPermissions && user.isModerator)) {
+                  const owner = await User.getFromID(ownerID);
 
-      response.status(403).json({
-        message: "You don't have permission to update this run."
-      });
+                  return owner._id;
 
-      return;
+                }
+              };
 
-    }
+              if (!(property in validators)) {
 
-    const modifications = request.body.modifications;
+                throw new BadRequestError(`${key} isn't a valid verification property.`);
 
-    if (!modifications || !(typeof (modifications) === "object" && !(modifications instanceof Array))) {
+              }
 
-      response.status(400).json({
-        message: `Your request body is missing a modifications object.`
-      });
+              const validator = validators[property];
+              const validatedValue = await validator(verification[property as keyof typeof verification]);
+              validatedVerification[property] = validatedValue;
 
-      return;
+            }
 
-    }
+            validatedVerification.timestamp = new Date();
 
-    const santitizedModifications: { [key: string]: unknown } = {};
-    for (const key of Object.keys(modifications)) {
+            return validatedVerification;
 
-      
-      const youtubeRegex = /^[^"&?\/\s]{11}$/gi;
+          } else {
 
-      const validationCheckers: { [key: string]: (value: unknown) => boolean } = {
-        isVerified: (value: unknown) => typeof (value) === "boolean",
-        ownerID: (value: unknown) => typeof (value) === "string",
-        durationMilliseconds: (value: unknown) => typeof (value) === "number",
-        youtubeWatchID: (value: unknown) => typeof (value) === "string" && youtubeRegex.test(value)
+            throw new BadRequestError("Verification must be null or an object.");
+
+          }
+
+        },
+        durationMilliseconds: (value: unknown) => {
+          
+          if (typeof (value) !== "number") {
+
+            throw new BadRequestError("durationMilliseconds must be a number.");
+
+          }
+
+          return value;
+            
+        },
+        youtubeWatchID: (value: unknown) => {
+          
+          if (typeof (value) !== "string" || !youtubeRegex.test(value)) {
+
+            throw new BadRequestError("youtubeWatchID must be a YouTube watch ID.");
+
+          }
+
+          return value;
+
+        }
       };
 
-      if (!validationCheckers[key]) {
+      const keyCheck = keyChecks[key];
 
-        continue;
+      if (!keyCheck) throw new BadRequestError(`${key} is not a valid key of a run.`);
+      
+      const newValue = await keyCheck(request.body[key]);
+      if (newValue !== undefined) {
 
-      }
+        request.body[key] = newValue;
 
-      if (!validationCheckers[key](modifications[key])) {
+      } else {
 
-        response.status(400).json({
-          message: `Validation failed for key ${key}. Check the key name and value and try again.`
-        });
-
-        return;
-
-      }
-
-      if ((key === "isVerified" || key === "ownerID") && !response.locals.user.isModerator) {
-
-        response.status(403).json({
-          message: `You don't have permission to modify the ${key} key.`
-        });
-
-        return;
+        delete request.body[key];
 
       }
-
-      santitizedModifications[key] = modifications[key];
 
     }
 
-    // Try to update the run.
-    await runsCollection.updateOne({
-      _id: runData._id
-    }, {
-      $set: santitizedModifications
-    });
+    console.log(request.body);
 
-    response.status(200).json({});
+    targetRun = await targetRun.edit(
+      {
+        $set: request.body,
+        $unset: unsetProperties
+      },
+    );
+
+    await addToAuditLog("games.runs.edit", actor._id, targetRun._id, response.locals.sessionID);
+
+    response.status(200).json(await targetRun.getExtendedProperties());
 
   } catch (error: unknown) {
 
-    console.error(error);
+    if (error instanceof RunNotFoundError || error instanceof NoPermissionError || error instanceof InternalServerError || error instanceof BadRequestError) {
+                            
+      response.status(error.statusCode).json({
+        message: error.message
+      });
 
-    response.status(500).json({
-      message: "Something bad happened on our end. Try again later."
-    });
+    } else {
 
-    return;
+      console.error(error);
+
+      const internalServerError = new InternalServerError();
+      response.status(internalServerError.statusCode).json({
+        message: internalServerError.message
+      });
+
+    }
 
   }
 

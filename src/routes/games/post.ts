@@ -55,7 +55,7 @@ createGamePageRouter.post("/", async (request, response: AuthenticatedResponse) 
     console.log(`Successfully created a game: ${game._id}`);
 
     // Add the event to the audit log.
-    await addToAuditLog("gamePages.create", user._id, game._id, user.getSessionID());
+    await addToAuditLog("games.create", user._id, game._id, user.getSessionID());
 
     response.status(201).json(game);
 

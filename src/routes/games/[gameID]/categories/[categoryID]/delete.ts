@@ -26,7 +26,7 @@ deleteCategoryRouter.delete("/", async (request: Request<{ categoryID: string }>
 
     console.log(`Successfully deleted a run category: ${category._id}`);
 
-    await addToAuditLog("gamePages.categories.delete", user._id, category._id, user.getSessionID());
+    await addToAuditLog("games.categories.delete", user._id, category._id, user.getSessionID());
 
     response.status(204).json({
       success: true
