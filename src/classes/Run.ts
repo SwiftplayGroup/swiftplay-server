@@ -136,11 +136,14 @@ export default class Run {
    * Updates a run based on the given properties.
    * @param updateFilter A MongoDB filter object
    */
-  async edit(updateFilter: UpdateFilter<RunProperties>): Promise<void> {
+  async edit(updateFilter: UpdateFilter<RunProperties>): Promise<Run> {
 
     await Run.collection.updateOne({
       _id: this._id
     }, updateFilter);
+
+    const newRun = await Run.getFromID(this._id);
+    return newRun;
 
   }
 

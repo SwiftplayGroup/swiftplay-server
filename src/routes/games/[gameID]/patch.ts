@@ -62,7 +62,7 @@ editGamePageRouter.patch("/", async (request: Request<{ gameID: string }>, respo
       }
     );
 
-    await addToAuditLog("gamePages.edit", user._id, game._id, user.getSessionID());
+    await addToAuditLog("games.edit", user._id, game._id, user.getSessionID());
 
     response.status(200).json({
       success: true

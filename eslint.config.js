@@ -14,7 +14,7 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/no-explicit-any": 1,
       "no-prototype-builtins": 1,
-      "@typescript-eslint/no-unused-vars": 1,
+      "@typescript-eslint/no-unused-vars": "warn",
       "semi": ["warn", "always"],
       "no-empty": "warn",
       "prefer-const": "warn",
