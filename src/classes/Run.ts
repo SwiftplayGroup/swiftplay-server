@@ -8,10 +8,10 @@
 import { Filter, ObjectId, UpdateFilter } from "mongodb";
 import database from "#utils/database-generator.js";
 import isBSONError from "#utils/isBSONError.js";
-import { ThreadNotFoundError } from "./errors/ThreadNotFoundError.js";
 import User, { UserProperties } from "./User.js";
 import Game, { GameProperties } from "./Game.js";
 import RunCategory, { RunCategoryProperties } from "./RunCategory.js";
+import { RunNotFoundError } from "./errors/RunNotFoundError.js";
 
 export type RunProperties = {
   _id: ObjectId;
@@ -74,17 +74,17 @@ export default class Run {
    * @returns A Run object.
    * @throws {RunNotFoundError} The run must exist.
    */
-  static async getFromID(threadID: ObjectId | string): Promise<Run> {
+  static async getFromID(runID: ObjectId | string): Promise<Run> {
 
     try {
 
       const data = await this.collection.findOne({
-        _id: new ObjectId(threadID)
+        _id: new ObjectId(runID)
       });
 
       if (!data) {
 
-        throw new ThreadNotFoundError(threadID);
+        throw new RunNotFoundError(runID);
 
       }
 
@@ -94,7 +94,7 @@ export default class Run {
 
       if (isBSONError(error)) {
       
-        throw new ThreadNotFoundError(threadID);
+        throw new RunNotFoundError(runID);
   
       } else {
 
