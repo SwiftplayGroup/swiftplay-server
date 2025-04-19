@@ -35,6 +35,17 @@ createPostRouter.post(
         parentPostID: post.parentPostID,
         embeddings: zeroVector,
       });
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const embedResult = await ai.models.embedContent({
+        model: "gemini-embedding-exp-03-07",
+        content: post.content,
+      });
+      console.log(embedResult);
+      const embeddings = embedResult.embeddings;
+      await database
+        .collection("posts")
+        .updateOne({ _id: post._id }, { $set: { embeddings } });
+      res.status(201).json({ ...thread });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
