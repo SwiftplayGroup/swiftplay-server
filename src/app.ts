@@ -12,6 +12,8 @@ import threadsRouter from "./routes/threads/index.js";
 import permissionsRouter from "./routes/permissions/index.js";
 import Permission from "#classes/Permission.js";
 
+console.log("Setting up routes...");
+
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -41,6 +43,7 @@ app.use((_, response) => {
 
 });
 
+console.log("Verifying default permissions...");
 await Permission.initializeDefaultPermissions();
 
 const port = process.env.PORT;

@@ -33,6 +33,7 @@ export type KnownHierarchicalName = (
   "games.delete" | 
   "games.edit" |
   "games.runs.create" |
+  "games.runs.remove" |
   "games.runs.verify" |
   "groups.create" |
   "groups.delete" |
@@ -179,6 +180,12 @@ export default class Permission {
         hierarchicalName: "games.runs.create",
         description: "",
         defaultAccessLevel: PermissionAccessLevel.USER
+      },
+      {
+        name: "Remove runs",
+        hierarchicalName: "games.runs.remove",
+        description: "",
+        defaultAccessLevel: PermissionAccessLevel.DENIED
       },
       {
         name: "Verify runs",

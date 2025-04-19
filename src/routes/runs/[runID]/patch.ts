@@ -81,6 +81,62 @@ editRunRouter.patch("/", async (request: Request<{ runID: string }>, response) =
           }
 
         },
+        removal: async (removal: unknown) => {
+
+          // Make sure the user can do this.
+          const verifyRunsPermission = await Permission.getFromHierarchicalName("games.runs.remove");
+          actor.verifyPermission(verifyRunsPermission, PermissionAccessLevel.USER);
+
+          if (removal === null) {
+
+            unsetProperties.removal = 1;
+
+          } else if (typeof(removal) === "object" && !(removal instanceof Array)) {
+
+            const validatedRemoval: Record<string, unknown> = {};
+
+            for (const property of Object.keys(removal)) {
+
+              const validators: {[property: string]: (property: unknown) => unknown} = {
+                ownerID: async (ownerID: unknown) => {
+
+                  // Verify user exists.
+                  if (typeof(ownerID) !== "string") {
+
+                    throw new BadRequestError("ownerID must be a user ID.");
+
+                  }
+
+                  const owner = await User.getFromID(ownerID);
+
+                  return owner._id;
+
+                }
+              };
+
+              if (!(property in validators)) {
+
+                throw new BadRequestError(`${key} isn't a valid removal property.`);
+
+              }
+
+              const validator = validators[property];
+              const validatedValue = await validator(removal[property as keyof typeof removal]);
+              validatedRemoval[property] = validatedValue;
+
+            }
+
+            validatedRemoval.timestamp = new Date();
+
+            return validatedRemoval;
+
+          } else {
+
+            throw new BadRequestError("Verification must be null or an object.");
+
+          }
+
+        },
         durationMilliseconds: (value: unknown) => {
           
           if (typeof (value) !== "number") {
@@ -121,8 +177,6 @@ editRunRouter.patch("/", async (request: Request<{ runID: string }>, response) =
       }
 
     }
-
-    console.log(request.body);
 
     targetRun = await targetRun.edit(
       {
