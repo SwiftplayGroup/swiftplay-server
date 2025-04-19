@@ -275,7 +275,7 @@ export default class Permission {
    */
   async edit(updateFilter: UpdateFilter<PermissionProperties>): Promise<void> {
 
-    Permission.collection.updateOne({
+    await Permission.collection.updateOne({
       _id: this._id
     }, updateFilter);
 

@@ -33,6 +33,14 @@ app.get("/", (_, response) => {
 
 });
 
+app.use((_, response) => {
+
+  response.json({
+    message: "Not found"
+  });
+
+});
+
 await Permission.initializeDefaultPermissions();
 
 const port = process.env.PORT;

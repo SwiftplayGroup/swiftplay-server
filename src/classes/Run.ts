@@ -138,7 +138,7 @@ export default class Run {
    */
   async edit(updateFilter: UpdateFilter<RunProperties>): Promise<void> {
 
-    Run.collection.updateOne({
+    await Run.collection.updateOne({
       _id: this._id
     }, updateFilter);
 
