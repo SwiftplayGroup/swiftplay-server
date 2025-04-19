@@ -18,6 +18,12 @@ export type VerificationProperties = {
   timestamp: Date;
 };
 
+export type RemovalProperties = {
+  ownerID: ObjectId;
+  timestamp: Date;
+  reason?: string;
+};
+
 export type RunProperties = {
   _id: ObjectId;
   durationMilliseconds: number;
@@ -26,6 +32,7 @@ export type RunProperties = {
   ownerID: ObjectId;
   youtubeWatchID: string;
   verification?: VerificationProperties;
+  removal?: RemovalProperties;
 }
 
 export type ExtendedRunProperties = Omit<RunProperties, "verification"> & {
@@ -33,6 +40,7 @@ export type ExtendedRunProperties = Omit<RunProperties, "verification"> & {
   category?: RunCategoryProperties;
   owner: UserProperties;
   verification?: Omit<VerificationProperties, "ownerID"> & {owner: UserProperties};
+  removal?: Omit<RemovalProperties, "ownerID"> & {owner: UserProperties};
 }
 
 export default class Run {
@@ -44,6 +52,7 @@ export default class Run {
   categoryID?: ObjectId;
   youtubeWatchID: string;
   verification: RunProperties["verification"];
+  removal: RunProperties["removal"];
 
   static collection = database.collection<RunProperties>("runs");
 
@@ -56,6 +65,7 @@ export default class Run {
     this.categoryID = properties.categoryID;
     this.youtubeWatchID = properties.youtubeWatchID;
     this.verification = properties.verification;
+    this.removal = properties.removal;
 
   }
 
@@ -169,6 +179,12 @@ export default class Run {
         verification: {
           owner: await User.getFromID(this.verification.ownerID),
           timestamp: this.verification.timestamp
+        }
+      }: {}),
+      ...(this.removal ? {
+        removal: {
+          owner: await User.getFromID(this.removal.ownerID),
+          timestamp: this.removal.timestamp
         }
       }: {})
     };
