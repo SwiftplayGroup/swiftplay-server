@@ -185,7 +185,7 @@ editRunRouter.patch("/", async (request: Request<{ runID: string }>, response) =
       },
     );
 
-    await addToAuditLog("games.runs.edit", actor._id, targetRun._id, response.locals.sessionID);
+    await addToAuditLog("games.runs.edit", actor._id, targetRun._id, actor.getSessionID());
 
     response.status(200).json(await targetRun.getExtendedProperties());
 
