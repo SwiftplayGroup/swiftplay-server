@@ -119,11 +119,14 @@ export default class User {
    * Updates a run based on the given properties.
    * @param updateFilter A MongoDB filter object
    */
-  async edit(updateFilter: UpdateFilter<UserProperties>): Promise<void> {
+  async edit(updateFilter: UpdateFilter<UserProperties>): Promise<User> {
 
-    User.collection.updateOne({
+    await User.collection.updateOne({
       _id: this._id
     }, updateFilter);
+
+    const user = User.getFromID(this._id);
+    return user;
 
   }
 

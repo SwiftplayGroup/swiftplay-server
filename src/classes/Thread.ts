@@ -131,7 +131,7 @@ export default class Thread {
    * @param updateFilter A MongoDB filter object
    */
   async edit(updateFilter: UpdateFilter<ThreadProperties>): Promise<void> {
-    Thread.collection.updateOne(
+    await Thread.collection.updateOne(
       {
         _id: this._id,
       },

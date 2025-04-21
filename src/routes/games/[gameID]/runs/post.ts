@@ -7,6 +7,7 @@ import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
+import addToAuditLog from "#utils/addToAuditLog.js";
 
 const createRunRouter = Router({mergeParams: true});
 
@@ -46,6 +47,9 @@ createRunRouter.post("/", async (request: Request<{ gameID: string }>, response:
       youtubeWatchID, 
       ownerID: response.locals.user._id
     });
+
+    // Add to the event log.
+    addToAuditLog("games.runs.create", user._id, run._id, user.getSessionID());
 
     // Return a 201 status code on success, along with the run ID
     response.status(201).json(run);

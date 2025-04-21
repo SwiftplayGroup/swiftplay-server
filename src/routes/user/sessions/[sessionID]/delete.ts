@@ -18,7 +18,7 @@ deleteSessionRouter.delete(
       sessionID = new ObjectId(sessionIDString);
       sessionFilter = {
         _id: sessionID,
-        accountID: response.locals.user._id,
+        userID: response.locals.user._id,
       };
 
       if ((await sessionsCollection.countDocuments(sessionFilter)) == 0) {

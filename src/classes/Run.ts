@@ -8,10 +8,21 @@
 import { Filter, ObjectId, UpdateFilter } from "mongodb";
 import database from "#utils/database-generator.js";
 import isBSONError from "#utils/isBSONError.js";
-import { ThreadNotFoundError } from "./errors/ThreadNotFoundError.js";
 import User, { UserProperties } from "./User.js";
 import Game, { GameProperties } from "./Game.js";
 import RunCategory, { RunCategoryProperties } from "./RunCategory.js";
+import { RunNotFoundError } from "./errors/RunNotFoundError.js";
+
+export type VerificationProperties = {
+  ownerID: ObjectId;
+  timestamp: Date;
+};
+
+export type RemovalProperties = {
+  ownerID: ObjectId;
+  timestamp: Date;
+  reason?: string;
+};
 
 export type RunProperties = {
   _id: ObjectId;
@@ -20,12 +31,16 @@ export type RunProperties = {
   categoryID?: ObjectId;
   ownerID: ObjectId;
   youtubeWatchID: string;
+  verification?: VerificationProperties;
+  removal?: RemovalProperties;
 }
 
-export type ExtendedRunProperties = RunProperties & {
+export type ExtendedRunProperties = Omit<RunProperties, "verification"> & {
   game: GameProperties;
   category?: RunCategoryProperties;
   owner: UserProperties;
+  verification?: Omit<VerificationProperties, "ownerID"> & {owner: UserProperties};
+  removal?: Omit<RemovalProperties, "ownerID"> & {owner: UserProperties};
 }
 
 export default class Run {
@@ -36,6 +51,8 @@ export default class Run {
   ownerID: ObjectId;
   categoryID?: ObjectId;
   youtubeWatchID: string;
+  verification: RunProperties["verification"];
+  removal: RunProperties["removal"];
 
   static collection = database.collection<RunProperties>("runs");
 
@@ -47,6 +64,8 @@ export default class Run {
     this.ownerID = properties.ownerID;
     this.categoryID = properties.categoryID;
     this.youtubeWatchID = properties.youtubeWatchID;
+    this.verification = properties.verification;
+    this.removal = properties.removal;
 
   }
 
@@ -74,17 +93,17 @@ export default class Run {
    * @returns A Run object.
    * @throws {RunNotFoundError} The run must exist.
    */
-  static async getFromID(threadID: ObjectId | string): Promise<Run> {
+  static async getFromID(runID: ObjectId | string): Promise<Run> {
 
     try {
 
       const data = await this.collection.findOne({
-        _id: new ObjectId(threadID)
+        _id: new ObjectId(runID)
       });
 
       if (!data) {
 
-        throw new ThreadNotFoundError(threadID);
+        throw new RunNotFoundError(runID);
 
       }
 
@@ -94,7 +113,7 @@ export default class Run {
 
       if (isBSONError(error)) {
       
-        throw new ThreadNotFoundError(threadID);
+        throw new RunNotFoundError(runID);
   
       } else {
 
@@ -136,11 +155,14 @@ export default class Run {
    * Updates a run based on the given properties.
    * @param updateFilter A MongoDB filter object
    */
-  async edit(updateFilter: UpdateFilter<RunProperties>): Promise<void> {
+  async edit(updateFilter: UpdateFilter<RunProperties>): Promise<Run> {
 
-    Run.collection.updateOne({
+    await Run.collection.updateOne({
       _id: this._id
     }, updateFilter);
+
+    const newRun = await Run.getFromID(this._id);
+    return newRun;
 
   }
 
@@ -152,7 +174,19 @@ export default class Run {
       owner: await User.getFromID(this.ownerID),
       ...(this.categoryID ? {
         category: await RunCategory.getFromID(this.categoryID)
-      } : {})
+      } : {}),
+      ...(this.verification ? {
+        verification: {
+          owner: await User.getFromID(this.verification.ownerID),
+          timestamp: this.verification.timestamp
+        }
+      }: {}),
+      ...(this.removal ? {
+        removal: {
+          owner: await User.getFromID(this.removal.ownerID),
+          timestamp: this.removal.timestamp
+        }
+      }: {})
     };
     
   }

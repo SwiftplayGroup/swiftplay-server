@@ -66,7 +66,7 @@ editCategoryRouter.patch("/", async (request: Request<{ categoryID: string }>, r
       $set: request.body
     });
 
-    await addToAuditLog("gamePages.categories.edit", user._id, category._id, user.getSessionID());
+    await addToAuditLog("games.categories.edit", user._id, category._id, user.getSessionID());
 
     response.status(200).json({
       success: true

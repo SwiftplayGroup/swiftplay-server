@@ -33,6 +33,8 @@ export type KnownHierarchicalName = (
   "games.delete" | 
   "games.edit" |
   "games.runs.create" |
+  "games.runs.remove" |
+  "games.runs.verify" |
   "groups.create" |
   "groups.delete" |
   "groups.members.add" |
@@ -180,6 +182,18 @@ export default class Permission {
         defaultAccessLevel: PermissionAccessLevel.USER
       },
       {
+        name: "Remove runs",
+        hierarchicalName: "games.runs.remove",
+        description: "",
+        defaultAccessLevel: PermissionAccessLevel.DENIED
+      },
+      {
+        name: "Verify runs",
+        hierarchicalName: "games.runs.verify",
+        description: "",
+        defaultAccessLevel: PermissionAccessLevel.DENIED
+      },
+      {
         name: "Create groups",
         hierarchicalName: "groups.create",
         description: "",
@@ -275,7 +289,7 @@ export default class Permission {
    */
   async edit(updateFilter: UpdateFilter<PermissionProperties>): Promise<void> {
 
-    Permission.collection.updateOne({
+    await Permission.collection.updateOne({
       _id: this._id
     }, updateFilter);
 

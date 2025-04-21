@@ -130,7 +130,7 @@ export default class Game {
    */
   async edit(updateFilter: UpdateFilter<GameProperties>): Promise<void> {
 
-    Game.collection.updateOne({
+    await Game.collection.updateOne({
       _id: this._id
     }, updateFilter);
 

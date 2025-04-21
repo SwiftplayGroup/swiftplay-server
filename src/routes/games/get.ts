@@ -1,9 +1,9 @@
 import { Router } from "express";
 import Game from "#classes/Game.js";
 
-const getGamePagesRouter = Router({mergeParams: true});
+const getgamesRouter = Router({mergeParams: true});
 
-getGamePagesRouter.get("/", async (request, response) => {
+getgamesRouter.get("/", async (request, response) => {
 
   try {
 
@@ -39,4 +39,4 @@ getGamePagesRouter.get("/", async (request, response) => {
 
 });
 
-export default getGamePagesRouter;
+export default getgamesRouter;

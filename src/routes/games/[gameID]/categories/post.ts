@@ -58,7 +58,7 @@ createCategoryRouter.post("/", async (request: Request<{ gameID: string }>, resp
     console.log(`Successfully created run category: ${category._id}`);
 
     // Add the event to the audit log.
-    await addToAuditLog("gamePages.categories.create", user._id, category._id, user.getSessionID());
+    await addToAuditLog("games.categories.create", user._id, category._id, user.getSessionID());
 
     // Return the info to the client.
     response.status(201).json(category);

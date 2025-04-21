@@ -27,7 +27,7 @@ deleteGamePageRouter.delete("/", async (request: Request<{ gameID: string }>, re
     await game.delete();
 
     // Add to audit log.
-    await addToAuditLog("gamePages.delete", user._id, game._id, user.getSessionID());
+    await addToAuditLog("games.delete", user._id, game._id, user.getSessionID());
 
     response.status(204).json({
       success: true
