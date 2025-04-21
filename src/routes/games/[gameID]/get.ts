@@ -10,7 +10,8 @@ getGamePageRouter.get("/", async (request: Request<{ gameID: string }>, response
   try {
 
     const game = await Game.getFromID(request.params.gameID);
-    response.json(game);
+    const extendedGame = await game.getExtendedProperties();
+    response.json(extendedGame);
 
   } catch (error: unknown) {
 

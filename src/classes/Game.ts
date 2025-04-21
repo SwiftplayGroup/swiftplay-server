@@ -10,12 +10,16 @@ import database from "#utils/database-generator.js";
 import isBSONError from "#utils/isBSONError.js";
 import Run from "./Run.js";
 import { GameNotFoundError } from "./errors/GameNotFoundError.js";
-import RunCategory from "./RunCategory.js";
+import RunCategory, { RunCategoryProperties } from "./RunCategory.js";
 
 export type GameProperties = {
   _id: ObjectId;
   name: string;
 }
+
+export type ExtendedGameProperties = GameProperties & {
+  categories: RunCategoryProperties[];
+};
 
 export default class Game {
 
@@ -146,6 +150,15 @@ export default class Game {
       gameID: this._id
     });
 
+  }
+
+  async getExtendedProperties(): Promise<ExtendedGameProperties> {
+  
+    return {
+      ...this,
+      categories: await this.getCategories()
+    };
+    
   }
 
 }

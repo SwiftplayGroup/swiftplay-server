@@ -24,8 +24,14 @@ getgamesRouter.get("/", async (request, response) => {
     }
 
     const games = await Game.find(requestedGameNames.length > 0 ? requestedGameNames : {});
+    const extendedGames = [];
+    for (const game of games) {
 
-    response.json(games);
+      extendedGames.push(await game.getExtendedProperties());
+
+    }
+
+    response.json(extendedGames);
 
   } catch (error: unknown) {
 
