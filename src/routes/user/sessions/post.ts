@@ -84,7 +84,6 @@ createSessionRouter.post("/", async (request, response) => {
     });
 
     return;
-
   }
 
 });
