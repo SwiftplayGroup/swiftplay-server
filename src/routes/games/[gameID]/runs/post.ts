@@ -52,7 +52,8 @@ createRunRouter.post("/", async (request: Request<{ gameID: string }>, response:
     addToAuditLog("games.runs.create", user._id, run._id, user.getSessionID());
 
     // Return a 201 status code on success, along with the run ID
-    response.status(201).json(run);
+    const extendedRun = await run.getExtendedProperties();
+    response.status(201).json(extendedRun);
 
   } catch (error) {
 
