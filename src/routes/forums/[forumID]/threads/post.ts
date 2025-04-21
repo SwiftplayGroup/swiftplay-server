@@ -19,7 +19,7 @@ const createThreadRouter = Router({
   mergeParams: true,
 });
 
-createThreadRouter.use("/", authenticator);
+createThreadRouter.post("/", authenticator);
 createThreadRouter.post(
   "/",
   async (
