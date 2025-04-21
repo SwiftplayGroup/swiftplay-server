@@ -16,6 +16,7 @@ export type GameProperties = {
   _id: ObjectId;
   name: string;
   approval?: ApprovalProperties;
+  coverArtURL?: string;
 }
 
 export type ApprovalProperties = {
@@ -32,6 +33,7 @@ export default class Game {
   readonly _id: GameProperties["_id"];
   name: GameProperties["name"];
   approval: GameProperties["approval"];
+  coverArtURL: GameProperties["coverArtURL"];
 
   static collection = database.collection<GameProperties>("games");
 
@@ -40,6 +42,7 @@ export default class Game {
     this._id = properties._id;
     this.name = properties.name;
     this.approval = properties.approval;
+    this.coverArtURL = properties.coverArtURL;
 
   }
 
