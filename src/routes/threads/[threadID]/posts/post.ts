@@ -4,7 +4,7 @@ import { ThreadNotFoundError } from "#classes/errors/ThreadNotFoundError.js";
 import Post from "#classes/Post.js";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
-
+import { GoogleGenAI } from "@google/genai";
 const createPostRouter = Router({
   mergeParams: true,
 });
@@ -38,7 +38,7 @@ createPostRouter.post(
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const embedResult = await ai.models.embedContent({
         model: "gemini-embedding-exp-03-07",
-        content: post.content,
+        contents: post.content,
       });
       console.log(embedResult);
       const embeddings = embedResult.embeddings;

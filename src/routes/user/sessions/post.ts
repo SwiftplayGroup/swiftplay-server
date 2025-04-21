@@ -32,13 +32,11 @@ createSessionRouter.post("/", async (request, response) => {
   const userData = await usersCollection.findOne(userFilter);
 
   if (!(userData && (await verifyPassword(userData.password, password)))) {
-
     response.status(401).json({
       message: "Incorrect username or password.",
     });
 
     return;
-
   }
 
   // Create a random hashed token and save it to the user's profile in the database.
@@ -67,13 +65,10 @@ createSessionRouter.post("/", async (request, response) => {
     });
 
     return;
-
   }
 
   // Return a 201 success, and a JSON response body with the session data.
-  response
-    .status(201)
-    .json({ ...sessionData, sessionID, token: sessionToken });
+  response.status(201).json({ ...sessionData, sessionID, token: sessionToken });
 });
 
 export default createSessionRouter;
