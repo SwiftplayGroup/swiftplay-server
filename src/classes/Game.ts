@@ -15,7 +15,13 @@ import RunCategory, { RunCategoryProperties } from "./RunCategory.js";
 export type GameProperties = {
   _id: ObjectId;
   name: string;
+  approval?: ApprovalProperties;
 }
+
+export type ApprovalProperties = {
+  ownerID: ObjectId;
+  timestamp: Date;
+};
 
 export type ExtendedGameProperties = GameProperties & {
   categories: RunCategoryProperties[];
@@ -23,8 +29,9 @@ export type ExtendedGameProperties = GameProperties & {
 
 export default class Game {
 
-  readonly _id: ObjectId;
-  name: string;
+  readonly _id: GameProperties["_id"];
+  name: GameProperties["name"];
+  approval: GameProperties["approval"];
 
   static collection = database.collection<GameProperties>("games");
 
@@ -32,6 +39,7 @@ export default class Game {
 
     this._id = properties._id;
     this.name = properties.name;
+    this.approval = properties.approval;
 
   }
 
@@ -132,11 +140,14 @@ export default class Game {
    * Updates a game based on the given properties.
    * @param updateFilter A MongoDB filter object
    */
-  async edit(updateFilter: UpdateFilter<GameProperties>): Promise<void> {
+  async edit(updateFilter: UpdateFilter<GameProperties>): Promise<Game> {
 
     await Game.collection.updateOne({
       _id: this._id
     }, updateFilter);
+
+    const newGame = await Game.getFromID(this._id);
+    return newGame;
 
   }
 

@@ -1,77 +1,126 @@
-import { Request, Router } from "express";
+import { Router, Request } from "express";
 import authenticator from "#utils/authenticator.js";
+import User from "#classes/User.js";
 import addToAuditLog from "#utils/addToAuditLog.js";
-import { AuthenticatedResponse } from "#classes/User.js";
-import Game from "#classes/Game.js";
-import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { BadRequestError } from "#classes/errors/BadRequestError.js";
 import { NoPermissionError } from "#classes/errors/NoPermissionError.js";
-import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
+import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import Permission, { PermissionAccessLevel } from "#classes/Permission.js";
+import { GameNotFoundError } from "#classes/errors/GameNotFoundError.js";
+import Game from "#classes/Game.js";
 
-const editGamePageRouter = Router({ mergeParams: true });
+const editRunRouter = Router({ mergeParams: true });
 
-editGamePageRouter.patch("/", authenticator);
-editGamePageRouter.patch("/", async (request: Request<{ gameID: string }>, response: AuthenticatedResponse) => {
+editRunRouter.patch("/", authenticator);
+editRunRouter.patch("/", async (request: Request<{ gameID: string }>, response) => {
 
   try {
 
-    // Verify permissions.
-    // TODO: Check game page permissions.
-    const { user } = response.locals;
-    const permission = await Permission.getFromHierarchicalName("games.edit");
-    user.verifyPermission(permission, PermissionAccessLevel.USER);
+    const actor: User = response.locals.user;
+    let targetGame = await Game.getFromID(request.params.gameID);
+    const editGamePermission = await Permission.getFromHierarchicalName("games.edit");
+    actor.verifyPermission(editGamePermission, PermissionAccessLevel.USER);
 
     // Verify properties.
+    const unsetProperties: {[key: string]: 1} = {};
     for (const key of Object.keys(request.body)) {
 
-      const keyChecks: {[key: string]: (value: unknown) => boolean | string} = {
-        name: (value: unknown) => (
-          typeof(value) !== "string" ? "Name must be a string." : (
-            value.length > 128 || value.length < 1 ? "Name must be between 1 to 128 characters." : true
-          )
-        )
+      const keyChecks: {[key: string]: (value: unknown) => unknown} = {
+        approval: async (approval: unknown) => {
+
+          // Make sure the user can do this.
+          const verifyRunsPermission = await Permission.getFromHierarchicalName("games.approve");
+          actor.verifyPermission(verifyRunsPermission, PermissionAccessLevel.USER);
+
+          if (approval === null) {
+
+            unsetProperties.approval = 1;
+
+          } else if (typeof(approval) === "object" && !(approval instanceof Array)) {
+
+            const validatedVerification: Record<string, unknown> = {};
+
+            for (const property of Object.keys(approval)) {
+
+              const validators: {[property: string]: (property: unknown) => unknown} = {
+                ownerID: async (ownerID: unknown) => {
+
+                  // Verify user exists.
+                  if (typeof(ownerID) !== "string") {
+
+                    throw new BadRequestError("ownerID must be a user ID.");
+
+                  }
+
+                  const owner = await User.getFromID(ownerID);
+
+                  return owner._id;
+
+                }
+              };
+
+              if (!(property in validators)) {
+
+                throw new BadRequestError(`${key} isn't a valid verification property.`);
+
+              }
+
+              const validator = validators[property];
+              const validatedValue = await validator(approval[property as keyof typeof approval]);
+              validatedVerification[property] = validatedValue;
+
+            }
+
+            validatedVerification.timestamp = new Date();
+
+            return validatedVerification;
+
+          } else {
+
+            throw new BadRequestError("Verification must be null or an object.");
+
+          }
+
+        },
+        name: (value: unknown) => {
+          if (typeof(value) !== "string") throw new BadRequestError("Name must be a string.");
+          if (value.length > 128 || value.length < 1) throw new BadRequestError("Name must be between 1 to 128 characters.");
+          return value;
+        }
       };
 
       const keyCheck = keyChecks[key];
-      if (!keyCheck) {
 
-        response.status(400).json({
-          message: `${key} is an invalid property.`
-        });
-        return;
-
-      }
+      if (!keyCheck) throw new BadRequestError(`${key} is not a valid key of a game.`);
       
-      const responseMessage = keyCheck(request.body[key]);
-      if (typeof(responseMessage) !== "boolean") {
+      const newValue = await keyCheck(request.body[key]);
+      if (newValue !== undefined) {
 
-        response.status(400).json({
-          message: responseMessage
-        });
-        return;
+        request.body[key] = newValue;
+
+      } else {
+
+        delete request.body[key];
 
       }
 
     }
 
-    const game = await Game.getFromID(request.params.gameID);
-    await game.edit(
+    targetGame = await targetGame.edit(
       {
-        $set: request.body
-      }
+        $set: request.body,
+        $unset: unsetProperties
+      },
     );
 
-    await addToAuditLog("games.edit", user._id, game._id, user.getSessionID());
+    await addToAuditLog("games.edit", actor._id, targetGame._id, actor.getSessionID());
 
-    response.status(200).json({
-      success: true
-    });
+    response.status(200).json(await targetGame.getExtendedProperties());
 
   } catch (error: unknown) {
 
-    if (error instanceof BadRequestError || error instanceof NoPermissionError || error instanceof GameNotFoundError || error instanceof InternalServerError) {
-                        
+    if (error instanceof GameNotFoundError || error instanceof NoPermissionError || error instanceof InternalServerError || error instanceof BadRequestError) {
+                            
       response.status(error.statusCode).json({
         message: error.message
       });
@@ -89,8 +138,6 @@ editGamePageRouter.patch("/", async (request: Request<{ gameID: string }>, respo
 
   }
 
-  
-
 });
 
-export default editGamePageRouter;
+export default editRunRouter;
