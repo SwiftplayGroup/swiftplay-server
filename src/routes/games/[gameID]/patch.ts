@@ -86,6 +86,17 @@ editRunRouter.patch("/", async (request: Request<{ gameID: string }>, response) 
           if (typeof(value) !== "string") throw new BadRequestError("Name must be a string.");
           if (value.length > 128 || value.length < 1) throw new BadRequestError("Name must be between 1 to 128 characters.");
           return value;
+        },
+        coverArtURL: (value: unknown) => {
+
+          if (value !== null && (typeof(value) !== "string" || !value.trim())) {
+
+            throw new BadRequestError("Cover art URL must be a string or null.");
+            
+          }
+
+          return value;
+
         }
       };
 
