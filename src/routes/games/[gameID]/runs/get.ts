@@ -19,21 +19,21 @@ getRunsRouter.get("/", async (request: Request<{ gameID: string }>, response) =>
         },
         {
           ...(request.query.include_unverified === "true" ? {} : {
-            verificationID: request.query.unverified_only === "true" ? null : {
-              $ne: null
+            verification: request.query.unverified_only === "true" ? undefined : {
+              $ne: undefined
             }
           })
         },
         {
           ...(request.query.include_removed === "true" ? {} : {
-            removalID: request.query.removed_only === "true" ? {
-              $ne: null
-            } : null
+            removal: request.query.removed_only === "true" ? {
+              $ne: undefined
+            } : undefined
           })
         }
       ]
     });
-
+    
     const extendedRuns = [];
     for (const run of runs) {
 
