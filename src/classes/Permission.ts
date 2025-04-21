@@ -29,6 +29,7 @@ export type KnownHierarchicalName = (
   "games.categories.create" | 
   "games.categories.delete" | 
   "games.categories.edit" | 
+  "games.approve" | 
   "games.create" | 
   "games.delete" | 
   "games.edit" |
@@ -156,6 +157,12 @@ export default class Permission {
         hierarchicalName: "games.categories.edit",
         description: "",
         defaultAccessLevel: PermissionAccessLevel.DENIED
+      },
+      {
+        name: "Approve game pages",
+        hierarchicalName: "games.approve",
+        description: "",
+        defaultAccessLevel: PermissionAccessLevel.USER
       },
       {
         name: "Create game pages",
