@@ -35,8 +35,10 @@ createCategoryRouter.post("/", async (request: Request<{ gameID: string }>, resp
     }
 
     // Verify that the name doesn't already exist.
+    const game = await Game.getFromID(request.params.gameID);
     const similarNameFilter = {
-      name: new RegExp(`^${categoryName.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig")
+      name: new RegExp(`^${categoryName.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')}$`, "ig"),
+      gameID: game._id
     };
 
     if (await RunCategory.collection.countDocuments(similarNameFilter) > 0) {
@@ -49,7 +51,6 @@ createCategoryRouter.post("/", async (request: Request<{ gameID: string }>, resp
     }
 
     // Add category metadata to database
-    const game = await Game.getFromID(request.params.gameID);
     const category = await RunCategory.create({
       name: categoryName,
       gameID: game._id
