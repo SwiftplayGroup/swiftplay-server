@@ -5,16 +5,18 @@ import Post from "#classes/Post.js";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import { GoogleGenAI } from "@google/genai";
-const createPostRouter = Router({
+
+const createPostInThreadRouter = Router({
   mergeParams: true,
 });
 
-createPostRouter.post(
+createPostInThreadRouter.post(
   "/",
-  async (req: Request<{ threadID: string; post: Post }>, res) => {
+  async (req: Request<{ threadID: string }>, res) => {
     try {
       const threadID = req.params.threadID;
-      const post = req.body.post;
+      const post = req.body;
+      console.log("Post data:", post);
 
       if (!post) {
         throw new InternalServerError();
@@ -26,7 +28,7 @@ createPostRouter.post(
         throw new ThreadNotFoundError("Thread not found");
       }
       const zeroVector = new Array(1536).fill(0);
-
+      console.log(thread);
       await database.collection("posts").insertOne({
         authorID: post.authorID,
         content: post.content,
@@ -50,7 +52,7 @@ createPostRouter.post(
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
     }
-  },
+  }
 );
 
-export default createPostRouter;
+export default createPostInThreadRouter;

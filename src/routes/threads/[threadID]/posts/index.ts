@@ -1,10 +1,12 @@
 import { Router } from "express";
 import getPostsRouter from "./get.js";
-import createPostRouter from "./post.js";
+import createPostInThreadRouter from "./post.js";
 
-const postsRouter = Router();
+const postsRouter = Router({
+  mergeParams: true,
+});
 
 postsRouter.use("/", getPostsRouter);
-postsRouter.use("/", createPostRouter);
+postsRouter.use("/", createPostInThreadRouter);
 
 export default postsRouter;
