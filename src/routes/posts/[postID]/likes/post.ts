@@ -25,6 +25,8 @@ createLikeRouter.post(
     try {
       const post = await Post.getFromID(req.params.postID);
       const like = await post.like(res.locals.user._id);
+      console.log(like);
+      console.log(post);
 
       const postData = await database
         .collection("posts")
