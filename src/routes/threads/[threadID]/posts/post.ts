@@ -27,7 +27,7 @@ createPostInThreadRouter.post(
       if (!thread) {
         throw new ThreadNotFoundError("Thread not found");
       }
-      const zeroVector = new Array(1536).fill(0);
+      const zeroVector = new Array(3072).fill(0);
       console.log(thread);
       await database.collection("posts").insertOne({
         authorID: post.authorID,
@@ -52,7 +52,7 @@ createPostInThreadRouter.post(
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
     }
-  }
+  },
 );
 
 export default createPostInThreadRouter;
