@@ -1,11 +1,10 @@
-import recommendedPostsUserIDRouter from "./[userID]/index.js";
-
+import getRecommendedPostsRouter from "./get.js";
 import { Router } from "express";
 
 const recommendedPostsRouter = Router({
   mergeParams: true,
 });
 
-recommendedPostsRouter.use("/:userID", recommendedPostsUserIDRouter);
+recommendedPostsRouter.use("/", getRecommendedPostsRouter);
 
 export default recommendedPostsRouter;

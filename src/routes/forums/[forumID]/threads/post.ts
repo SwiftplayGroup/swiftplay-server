@@ -49,7 +49,7 @@ createThreadRouter.post(
 
       // Create thread and post.
       const forum = await Forum.getFromID(req.params.forumID);
-      const zeroVector = new Array(1536).fill(0);
+      const zeroVector = new Array(3072).fill(0);
       const thread = await forum.createThread({
         title: req.body.title,
         authorID: res.locals.user._id,

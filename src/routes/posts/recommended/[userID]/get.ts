@@ -19,7 +19,7 @@ getRecommendedPostsRouter.get(
         throw new InternalServerError();
       }
 
-      const userEmbeddings = user.embeddings;
+      const userEmbeddings = user.embeddings[0].values;
 
       if (!userEmbeddings) {
         throw new InternalServerError();
@@ -31,7 +31,7 @@ getRecommendedPostsRouter.get(
         .aggregate([
           {
             $vectorSearch: {
-              index: "ReccommendedPosts",
+              index: "PostsVectorIndex",
               path: "embeddings",
               queryVector: userEmbeddings,
               numCandidates: 100,
@@ -41,7 +41,7 @@ getRecommendedPostsRouter.get(
           },
         ])
         .toArray();
-
+      console.log(recommendedPosts);
       res.status(200).json(recommendedPosts);
     } catch (error) {
       console.error(error);
@@ -49,3 +49,5 @@ getRecommendedPostsRouter.get(
     }
   },
 );
+
+export default getRecommendedPostsRouter;

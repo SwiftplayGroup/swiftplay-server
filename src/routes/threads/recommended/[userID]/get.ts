@@ -18,7 +18,7 @@ getRecommendedThreadsRouter.get(
       if (!user) {
         throw new InternalServerError();
       }
-      const userEmbeddings = user.embeddings;
+      const userEmbeddings = user.embeddings[0].values;
       if (!userEmbeddings) {
         throw new InternalServerError();
         //for now this works, in the future return the top threads.
@@ -28,8 +28,8 @@ getRecommendedThreadsRouter.get(
         .aggregate([
           {
             $vectorSearch: {
-              index: "RecommendedThreads",
-              path: "embeddings",
+              index: "ThreadsVectorIndex",
+              path: "embeddings.values",
               queryVector: userEmbeddings,
               numCandidates: 100,
               limit: 10,
@@ -38,6 +38,7 @@ getRecommendedThreadsRouter.get(
           },
         ])
         .toArray();
+      console.log(recommendedThreads);
       res.status(200).json({ recommendedThreads });
     } catch (error) {
       console.error(error);
@@ -45,3 +46,5 @@ getRecommendedThreadsRouter.get(
     }
   },
 );
+
+export default getRecommendedThreadsRouter;
