@@ -10,6 +10,7 @@ deleteSessionRouter.delete(
   "/",
   async (request: Request<{ sessionID: string }>, response) => {
     // Verify that the user provides a valid session ID in the body.
+    console.log("Deleting session with ID:", request.params.sessionID);
     const sessionIDString = request.params.sessionID;
     let sessionID;
     const sessionsCollection = database.collection("sessions");
@@ -43,7 +44,6 @@ deleteSessionRouter.delete(
       }
 
       response.status(204).json({});
-
     } catch (error) {
       console.error(error);
 
@@ -51,7 +51,6 @@ deleteSessionRouter.delete(
         message: "Something bad happened on our side. Try again later.",
       });
     }
-    
   },
 );
 
