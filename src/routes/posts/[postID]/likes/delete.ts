@@ -14,64 +14,59 @@ const deleteLikesRouter = Router({
 });
 
 deleteLikesRouter.use("/", authenticator);
-deleteLikesRouter.delete("/", async (req: Request<{postID: string}, undefined, {userIDs?: string[]}>, res: AuthenticatedResponse) => {
-  try {
+deleteLikesRouter.delete(
+  "/",
+  async (
+    req: Request<{ postID: string }, undefined, { userIDs?: string[] }>,
+    res: AuthenticatedResponse,
+  ) => {
+    try {
+      const post = await Post.getFromID(req.params.postID);
+      let filter: Filter<LikeProperties> = {};
 
-    const post = await Post.getFromID(req.params.postID);
-    let filter: Filter<LikeProperties> = {};
+      if (!req.body.userIDs) {
+        filter = {
+          userID: res.locals.user._id,
+        };
+      } else {
+        filter.$or = [];
+        for (const userID of req.body.userIDs) {
+          if (typeof userID !== "string") {
+            throw new BadRequestError("All user IDs must be strings.");
+          }
 
-    if (!req.body.userIDs) {
-
-      filter = {
-        userID: res.locals.user._id
-      };
-
-    } else {
-
-      filter.$or = [];
-      for (const userID of req.body.userIDs) {
-
-        if (typeof(userID) !== "string") {
-
-          throw new BadRequestError("All user IDs must be strings.");
-
+          const user = await User.getFromID(userID);
+          filter.$or.push({
+            userID: user._id,
+          });
         }
-
-        const user = await User.getFromID(userID);
-        filter.$or.push({
-          userID: user._id
-        });
-
       }
 
-    }
+      await post.deleteLike(filter);
 
-    await post.deleteLike(filter);
-
-    res.status(204).json({
-      success: true
-    });
-
-  } catch (error) {
-
-    if (error instanceof InternalServerError || error instanceof UserNotFoundError || error instanceof PostNotFoundError || error instanceof BadRequestError) {
-    
-      res.status(error.statusCode).json({
-        message: error.message
+      res.status(200).json({
+        success: true,
       });
+    } catch (error) {
+      if (
+        error instanceof InternalServerError ||
+        error instanceof UserNotFoundError ||
+        error instanceof PostNotFoundError ||
+        error instanceof BadRequestError
+      ) {
+        res.status(error.statusCode).json({
+          message: error.message,
+        });
+      } else {
+        console.warn(error);
 
-    } else {
-
-      console.warn(error);
-
-      const internalServerError = new InternalServerError();
-      res.status(internalServerError.statusCode).json({
-        message: internalServerError.message
-      });
-
+        const internalServerError = new InternalServerError();
+        res.status(internalServerError.statusCode).json({
+          message: internalServerError.message,
+        });
+      }
     }
-
-  }
-});
+  },
+);
 
 export default deleteLikesRouter;

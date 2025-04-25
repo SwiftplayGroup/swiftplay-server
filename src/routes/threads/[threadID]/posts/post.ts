@@ -1,7 +1,6 @@
 import { Router, Request } from "express";
 import { InternalServerError } from "#classes/errors/InternalServerError.js";
 import { ThreadNotFoundError } from "#classes/errors/ThreadNotFoundError.js";
-import Post from "#classes/Post.js";
 import database from "#utils/database-generator.js";
 import { ObjectId } from "mongodb";
 import { GoogleGenAI } from "@google/genai";
@@ -28,7 +27,6 @@ createPostInThreadRouter.post(
         throw new ThreadNotFoundError("Thread not found");
       }
       const zeroVector = new Array(3072).fill(0);
-      console.log(thread);
       await database.collection("posts").insertOne({
         authorID: post.authorID,
         content: post.content,
@@ -42,7 +40,6 @@ createPostInThreadRouter.post(
         model: "gemini-embedding-exp-03-07",
         contents: post.content,
       });
-      console.log(embedResult);
       const embeddings = embedResult.embeddings;
       await database
         .collection("posts")
